@@ -15,6 +15,10 @@ export default function Navigation() {
 	const links = React.useMemo(() => {
 		return [
 			{
+				name: 'Mint',
+				href: '/mint'
+			},
+			{
 				name: 'Docs',
 				href: GITBOOK_URL
 			},

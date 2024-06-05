@@ -1,0 +1,163 @@
+.exchangeContainer {
+  border-radius: 8px;
+  color: #ffffff;
+  max-width: 628px;
+  margin: auto;
+  position: relative;
+}
+
+.exchangeBlock {
+  background-color: #272727;
+  padding: 24px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 6px;
+  opacity: 0.5;
+  font-size: 0.75rem;
+}
+
+.fieldInfo {
+  color: orange;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.inputGroup {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.inputGroup > * {
+  display: flex;
+  flex-direction: column;
+}
+
+.input {
+  padding: 8px;
+  border: none;
+  background-color: #272727;
+  color: #fff;
+  font-size: 1.5rem;
+  height: min-content;
+  margin-top: 3px;
+  width: 100%;
+  outline: none;
+}
+
+.input:not(:disabled) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.input::placeholder {
+  opacity: 0.5;
+}
+
+.currencyContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.5rem;
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  min-width: 7rem;
+  background-color: #313235;
+  opacity: 0.95;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.currencyContainer > img {
+  border-radius: 50%;
+}
+
+.networkTag {
+  width: 20px;
+  height: 20px;
+}
+
+.networkTag > svg {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.networkTagWrapper {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+}
+
+.balance {
+  font-size: 0.75rem;
+  opacity: 0.5;
+  margin-left: 8px;
+}
+
+.maxButton {
+  background-color: #272727;
+  color: #f7931a;
+  cursor: pointer;
+}
+
+.fee {
+  text-align: right;
+  opacity: 0.9;
+  font-size: 0.75rem;
+  margin-right: 24px;
+  margin-top: 12px;
+}
+
+.arrow {
+  background-color: #232323;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  position: relative;
+  margin: auto;
+  margin-bottom: -8px;
+  margin-top: -8px;
+}
+
+.arrow > * {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.balanceContainer {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.addressInputContainer {
+  margin-top: 1rem;
+}
+
+.historyLink {
+  text-align: center;
+  opacity: 0.8;
+  transition: opacity 0.5s;
+  margin-top: 1rem;
+  color: white;
+  font-size: 0.8rem;
+}
+
+.historyLink:hover {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.submitButton > button {
+  width: 100%;
+}
