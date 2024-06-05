@@ -7,3 +7,5 @@ declare module 'react-fitty' {
     } & React.RefAttributes<HTMLElement>>;
     export { ReactFitty };
 }
+
+declare module 'connectkit-next-siwe';

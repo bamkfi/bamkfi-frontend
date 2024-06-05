@@ -1,0 +1,140 @@
+.cardWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  padding: 24px;
+  background-color: #272727;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cardsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card {
+  border-radius: 8px;
+  width: 100%;
+  text-wrap: wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.field {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.fieldLabel {
+  font-weight: bold;
+}
+
+.status {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.warning {
+  color: rgb(240, 230, 140);
+}
+
+.error {
+  color: rgb(205, 92, 92);
+}
+
+.success {
+  color: rgb(60, 179, 113);
+}
+
+.networkTagWrapper {
+  display: inline-block;
+}
+
+.networkTag {
+  width: 20px;
+  height: 20px;
+}
+
+.title {
+  text-align: center;
+}
+
+.currencyValueContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-wrap: anywhere;
+}
+
+@media screen and (max-width: 600px) {
+  .currencyValueContainer {
+    align-items: start;
+  }
+}
+
+.label {
+  display: block;
+  margin-bottom: 6px;
+  opacity: 0.5;
+  font-size: 0.75rem;
+}
+
+.labeledValuesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.expanded > hr {
+  margin: 1rem;
+}
+.expanded > div {
+  margin-top: 0.5rem;
+}
+
+.hrOuter {
+  margin: 2rem;
+}
+
+.txid {
+  font-size: 0.75rem;
+}
+
+.pages {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.iconButton {
+  background-color: rgb(39, 39, 39);
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  fill: white;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.iconButton:hover {
+  cursor: pointer;
+}
