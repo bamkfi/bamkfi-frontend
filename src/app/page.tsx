@@ -27,36 +27,84 @@ async function getData() {
 	}
 	const nusdInfoData: { minted: string } = (await nusdInfo.json()).data
 
-	const bamkRune = await fetch(
-		'https://open-api.unisat.io/v3/market/runes/auction/runes_types_specified',
-		{
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${process.env.UNISAT_API_KEY}`
-			},
-			body: JSON.stringify({
-				tick: 'BAMK•OF•NAKAMOTO•DOLLAR',
-				timeType: 'day1'
-			}),
-			next: { revalidate: 600 }
-		}
-	)
-	if (!bamkRune.ok) {
-		console.log(bamkRune)
+	// const bamkRune = await fetch(
+	// 	'https://open-api.unisat.io/v3/market/runes/auction/runes_types_specified',
+	// 	{
+	// 		method: 'POST',
+	// 		headers: {
+	// 			'Content-Type': 'application/json',
+	// 			Authorization: `Bearer ${process.env.UNISAT_API_KEY}`
+	// 		},
+	// 		body: JSON.stringify({
+	// 			tick: 'BAMK•OF•NAKAMOTO•DOLLAR',
+	// 			timeType: 'day1'
+	// 		}),
+	// 		next: { revalidate: 600 }
+	// 	}
+	// )
+	// if (!bamkRune.ok) {
+	// 	console.log(bamkRune)
+	// 	return {}
+	// }
+	// const bamkRuneData: {
+	// 	tick: string
+	// 	symbol: string
+	// 	curPrice: number // in sats
+	// 	changePrice: number
+	// 	btcVolume: number
+	// 	amountVolume: number
+	// 	cap: string
+	// 	capUSD: string
+	// 	warning: boolean
+	// } = (await bamkRune.json()).data
+
+
+	const bamkRune2 = await fetch('https://api-mainnet.magiceden.dev/v2/ord/btc/runes/market/BAMKOFNAKAMOTODOLLAR/info', {
+		headers: {
+			Authorization: `Bearer ${process.env.MAGIC_EDEN_API_KEY}`
+		},
+		next: { revalidate: 600 }
+	})
+	if (!bamkRune2.ok) {
+		console.log(bamkRune2)
 		return {}
 	}
-	const bamkRuneData: {
-		tick: string
-		symbol: string
-		curPrice: number // in sats
-		changePrice: number
-		btcVolume: number
-		amountVolume: number
-		cap: string
-		capUSD: string
-		warning: boolean
-	} = (await bamkRune.json()).data
+	const bamkRune2Data = (await bamkRune2.json()) as {
+		rune: string;
+		runeNumber: number;
+		symbol: string;
+		ticker: string;
+		name: string;
+		totalSupply: string;
+		formattedTotalSupply: string;
+		divisibility: number;
+		imageURI: string;
+		minOrderSize: number;
+		maxOrderSize: number;
+		pendingTxnCount: number;
+		floorUnitPrice: {
+		  formatted: string;
+		  value: string;
+		};
+		marketCap: number;
+		holderCount: number;
+		volume: {
+		  '1d': number;
+		  '7d': number;
+		  '30d': number;
+		  all: number;
+		};
+		deltaFloor: {
+		  '1d': number;
+		  '7d': number;
+		  '30d': number;
+		};
+		txnCount: {
+		  '1d': number;
+		  '7d': number;
+		  '30d': number;
+		};
+	  }
 
 	const nusdRune = await fetch(
 		'https://open-api.unisat.io/v1/indexer/address/bc1pg9afu20tdkmzm40zhqugeqjzl5znfdh8ndns48t0hnmn5gu7uz5saznpu9/runes/845005%3A178/balance',
@@ -113,7 +161,7 @@ async function getData() {
 		}
 	)
 	if (!susdePrice.ok) {
-		console.log(bamkRune)
+		console.log(susdePrice)
 		return {}
 	}
 	const susdePriceData: {
@@ -123,11 +171,30 @@ async function getData() {
 	} = await susdePrice.json()
 	const susdeBackingUSDValue = susdePriceData['ethena-staked-usde'].usd * Number(susdeBalance)
 
+	const btcPrice = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', {
+		method: 'GET',
+		headers: {
+			'x-cg-demo-api-key': process.env.COINGECKO_API_KEY as string,
+		},
+		next: { revalidate: 600 }
+	});
+	if (!btcPrice.ok) {
+		console.log(btcPrice)
+		return {}
+	}
+	const btcPriceData: {
+		bitcoin: {
+		  usd: number;
+		}
+	 } = (await btcPrice.json());
+
 	return {
 		nusdInfoData,
 		nusdRuneData,
-		bamkRuneData,
-		susdeBackingUSDValue
+		// bamkRuneData,
+		bamkRune2Data,
+		susdeBackingUSDValue,
+		btcPriceData
 	}
 }
 
@@ -151,14 +218,14 @@ export default async function Home() {
 				<h1 className={classNames(nunito.className, 'max-w-full w-[520px] mt-2 break-words')}>
 					<Fitty>BAMK•OF•NAKAMOTO•DOLLAR</Fitty>
 				</h1>
-				{data.bamkRuneData ? (
+				{data.bamkRune2Data ? (
 					<div className="flex gap-2 flex-wrap -mt-2">
 						<div
 							title="BAMK Price"
 							className="bg-primary/5 flex text-sm gap-2 px-4 rounded-md h-10 items-center w-max mt-1"
 						>
 							<p>
-								<span className="text-primary">{data.bamkRuneData.curPrice} sats</span>
+								<span className="text-primary">{Number(data.bamkRune2Data.floorUnitPrice.formatted).toLocaleString(undefined, { maximumFractionDigits: 2 })} sats</span>
 								{' / 🏦'}
 							</p>
 						</div>
@@ -169,7 +236,7 @@ export default async function Home() {
 							<p>🏦 MCAP</p>
 							<p className="text-primary font-bold">
 								{`$${(
-									Number(data.bamkRuneData?.capUSD) *
+									Number(data.bamkRune2Data.marketCap) * data.btcPriceData.bitcoin.usd *
 									(1 - BAMK_PREMINED_SUPPLY / BAMK_TOTAL_SUPPLY)
 								).toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
 							</p>
@@ -180,7 +247,7 @@ export default async function Home() {
 						>
 							<p>🏦 FDV</p>
 							<p className="text-primary font-bold">
-								{`$${Number(data.bamkRuneData?.capUSD).toLocaleString(undefined, {
+								{`$${(Number(data.bamkRune2Data.marketCap) * data.btcPriceData.bitcoin.usd).toLocaleString(undefined, {
 									maximumFractionDigits: 0
 								})}`}
 							</p>
