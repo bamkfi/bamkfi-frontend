@@ -16,33 +16,30 @@ const siweClient = configureClientSIWE({
   statement: 'Sign In With Ethereum to prove you control this wallet.',
 });
 
-export const initialChain =
-  process.env.VERCEL_ENV === 'production' ? mainnet : sepolia;
-
+const chain = process.env.VERCEL_ENV === 'production' ? mainnet : sepolia;
+const transport = process.env.VERCEL_ENV === 'production' ? fallback([
+  webSocket(
+    `wss://mainnet.infura.io/ws/v3/${process.env.NEXT_PUBLIC_INFURA_ID}`
+  ),
+  http(
+    `https://mainnet.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_ID}`
+  ),
+]) : fallback([
+  webSocket(
+    `https://sepolia.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_ID}`
+  ),
+  http(
+    `https://sepolia.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_ID}`
+  ),
+]);
 const config = createConfig(
   getDefaultConfig({
     appName: 'Bamk.fi',
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
-    chains: [initialChain],
+    chains: [chain],
     transports: {
-      [mainnet.id]: fallback([
-        webSocket(
-          `wss://mainnet.infura.io/ws/v3/${process.env.NEXT_PUBLIC_INFURA_ID}`
-        ),
-        http(
-          `https://mainnet.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_ID}`
-        ),
-      ]),
-      [sepolia.id]: fallback([
-        webSocket(
-          `https://sepolia.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_ID}`
-        ),
-        http(
-          `https://sepolia.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_ID}`
-        ),
-      ]),
-    },
-    // connectors: []
+      [chain.id]: transport,
+    }
   })
 );
 
@@ -59,9 +56,7 @@ export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
               hideQuestionMarkCTA: true,
               hideNoWalletCTA: true,
               overlayBlur: 1,
-              initialChainId: initialChain.id,
               enforceSupportedChains: true,
-              embedGoogleFonts: true,
             }}
             theme="midnight"
             customTheme={{
