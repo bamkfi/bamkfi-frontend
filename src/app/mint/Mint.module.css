@@ -1,9 +1,10 @@
 .exchangeContainer {
   border-radius: 8px;
   color: #ffffff;
-  max-width: 628px;
+  max-width: 420px;
   margin: auto;
   position: relative;
+  margin-top: 28px;
 }
 
 .exchangeBlock {
@@ -11,6 +12,7 @@
   padding: 24px;
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
+  position: relative;
 }
 
 .label {
@@ -21,7 +23,7 @@
 }
 
 .fieldInfo {
-  color: orange;
+  color: #f7931a;
   opacity: 0.9;
   margin-top: 4px;
 }
@@ -29,7 +31,7 @@
 .inputGroup {
   position: relative;
   display: flex;
-  gap: 10px;
+  gap: 1rem;
   width: 100%;
   justify-content: space-between;
 }
@@ -37,6 +39,7 @@
 .inputGroup > * {
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
 .input {
@@ -160,4 +163,13 @@
 
 .submitButton > button {
   width: 100%;
+  text-transform: uppercase;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 18px;
+}
+
+.submitButton {
+  margin-top: 12px;
 }

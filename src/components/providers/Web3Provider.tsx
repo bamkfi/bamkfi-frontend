@@ -7,6 +7,9 @@ import { mainnet, sepolia } from '@wagmi/core/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ConnectKitProvider, getDefaultConfig } from 'connectkit';
 import { configureClientSIWE } from 'connectkit-next-siwe';
+import { Mulish } from 'next/font/google';
+
+const mulish = Mulish({ subsets: ['latin'] })
 
 const siweClient = configureClientSIWE({
   apiRoutePrefix: '/api/siwe',
@@ -58,10 +61,12 @@ export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
               overlayBlur: 1,
               initialChainId: initialChain.id,
               enforceSupportedChains: true,
+              embedGoogleFonts: true,
             }}
             theme="midnight"
-            onDisconnect={() => {
-              // console.log('onDisconnect callback')
+            customTheme={{
+              "--ck-spinner-color": "#f7951d",
+              "--ck-font-family": mulish.style.fontFamily,
             }}
           >
             {children}

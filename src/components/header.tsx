@@ -9,6 +9,7 @@ import BamkIcon from '@/icons/bamk'
 import classNames from 'classnames'
 import NusdIcon from '@/icons/nusd'
 import Navigation from './navigation'
+import { CustomConnectKitButton } from './ConnectKitButton'
 
 const nunito = Nunito({ subsets: ['latin'] })
 
@@ -95,6 +96,7 @@ export default function Header(props: {
 					</div>
 				) : null
 				}
+				<CustomConnectKitButton />
 			</div>
 			<div className='sm:hidden container ml-2 mt-3 mb-4'>
 				<Navigation />

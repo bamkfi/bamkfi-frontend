@@ -5,5 +5,6 @@ export default function DashboardLayout({
   }: {
     children: React.ReactNode
   }) {
+    return children;
     return <Web3Provider>{children}</Web3Provider>
   }
