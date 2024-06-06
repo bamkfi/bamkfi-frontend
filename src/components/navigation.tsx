@@ -25,6 +25,10 @@ export default function Navigation() {
 			{
 				name: 'Leaderboard',
 				href: '/leaderboard'
+			},
+			{
+				name: 'Reward Calculator',
+				href: '/calculator'
 			}
 		]
 	}, [])

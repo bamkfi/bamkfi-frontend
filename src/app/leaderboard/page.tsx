@@ -92,10 +92,10 @@ export default async function Leaderboard() {
 							<th scope="col" className="px-6 py-3">
 								Address
 							</th>
-							<th scope="col" className="px-6 py-3">
+							<th scope="col" className="px-6 py-3 text-right">
 								Amount
 							</th>
-							<th scope="col" className="px-6 py-3">
+							<th scope="col" className="px-6 py-3 text-right">
 								Value
 							</th>
 						</tr>
