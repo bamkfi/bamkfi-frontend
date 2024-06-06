@@ -67,10 +67,10 @@ export default function Header(props: {
 
 	return (
 		<header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-			<div className="flex justify-between items-center h-14 max-w-screen-xl container">
+			<div className="flex justify-between items-center h-14 max-w-screen-xl container px-2 sm:px-8">
 				<div className="flex items-center">
 					<Link href="/">
-						<div className={classNames(nunito.className, "flex h-8 mr-6 gap-4")}>
+						<div className={classNames(nunito.className, "flex h-8 mr-2 gap-4")}>
 							<BamkIcon className="h-8 w-8 stroke-primary" />
 							<div className='uppercase text-zinc-50 text-xl leading-[31px] tracking-[0.23em]'>
 								Bamk.fi
