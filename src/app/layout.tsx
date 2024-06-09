@@ -7,6 +7,7 @@ import Header from '@/components/header'
 import Footer from '@/components/footer'
 import classNames from 'classnames'
 import { DataProvider } from "@/app/context/datacontext";
+import { Web3Provider } from "@/components/providers/Web3Provider";
 
 const mulish = Mulish({ subsets: ['latin'] })
 
@@ -188,13 +189,15 @@ export default async function RootLayout({
 					enableSystem
 					disableTransitionOnChange
 				>
-					<DataProvider data={data}>
-					<Header data={data} />
-					<main className="flex-[1_1_auto]">
-						{children}
-					</main>
-					<Footer />
-					</DataProvider>
+					<Web3Provider>
+						<DataProvider data={data}>
+							<Header data={data} />
+							<main className="flex-[1_1_auto]">
+								{children}
+							</main>
+							<Footer />
+						</DataProvider>
+					</Web3Provider>
 				</ThemeProvider>
 			</body>
 		</html>

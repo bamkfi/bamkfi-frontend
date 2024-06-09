@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-children-prop */
@@ -12,7 +12,7 @@ import {
   USDE_CONTRACT_ADDRESS_MAINNET,
   USDF_CONTRACT_ADDRESS_SEPOLIA,
 } from '../../constants';
-import { ConnectKitButton, useModal, useSIWE } from 'connectkit';
+import { useModal, useSIWE } from 'connectkit';
 import { ArrowIcon } from '../../icons/ArrowIcon';
 
 import { useForm } from '@tanstack/react-form';
@@ -22,11 +22,13 @@ import { toast } from 'react-toastify';
 import type { PostDepositRequest, PostDepositResponse } from '../api/deposit/types';
 import { Button } from '../../components/ui/button';
 import { MintHistory } from './History';
-import NUSDIcon from '../../icons/nusd';
 import { unixTimeInSeconds } from '../../utils';
 import EthIcon from '@/icons/eth';
 import BtcIcon from '@/icons/btc';
-import classNames from 'classnames';
+import { Nunito } from 'next/font/google'
+import NusdIcon from '../../icons/nusd';
+
+const nunito = Nunito({ subsets: ['latin'] })
 
 const USDE_TOKEN_DECIMALS = 18;
 
@@ -50,7 +52,6 @@ const Mint: React.FC = () => {
   const modal = useModal();
   const account = useAccount();
   const { writeContractAsync } = useWriteContract();
-  const comingSoon = true;
   const form = useForm({
     defaultValues: {
       sendAmount: '',
@@ -66,6 +67,7 @@ const Mint: React.FC = () => {
         }
 
         // Field validator not working for "sendAmount" so validating here instead
+        // https://tanstack.com/form/latest/docs/framework/react/guides/validation#validation-at-field-level-vs-at-form-level
         let error = '';
         if (
           !value.sendAmount ||
@@ -170,9 +172,9 @@ const Mint: React.FC = () => {
           e.stopPropagation();
           void form.handleSubmit();
         }}
-        className={
-          classNames({['opacity-25 pointer-events-none']: requireConnect })
-        }
+        // className={classNames(
+        //   {['blur-sm']: requireConnect}
+        // )}
       >
         <div className={styles.exchangeBlock}>
           <form.Field
@@ -191,7 +193,7 @@ const Mint: React.FC = () => {
             children={(field) => (
               <>
                 <label htmlFor={field.name} className={styles.label}>
-                  You send:
+                  You send
                 </label>
                 <div className={styles.inputGroup}>
                   <div>
@@ -251,10 +253,9 @@ const Mint: React.FC = () => {
             children={(field) => (
               <>
                 <label htmlFor={field.name} className={styles.label}>
-                  You receive:
+                  You receive
                 </label>
                 <div className={styles.inputGroup}>
-                  <div>
                     <input
                       id={field.name}
                       name={field.name}
@@ -267,10 +268,11 @@ const Mint: React.FC = () => {
                       disabled
                     />
                     <FieldInfo field={field} />
-                  </div>
                   <div>
                     <div className={styles.currencyContainer}>
-                      <NUSDIcon />
+                      <div className="bg-[#F7931A] p-[0.4rem] rounded-full">
+                        <NusdIcon height={14} width={14} className="stroke-primary" />
+                      </div>
                       <div className={styles.coinText}>
                         <div>NUSD</div>
                       </div>
@@ -297,7 +299,7 @@ const Mint: React.FC = () => {
               children={(field) => (
                 <>
                   <label htmlFor={field.name} className={styles.label}>
-                    Address
+                    To address
                   </label>
                   <input
                     id={field.name}
@@ -325,10 +327,10 @@ const Mint: React.FC = () => {
           selector={(state) => [state.canSubmit]}
           children={([canSubmit]) => {
             return (
-              <div className={styles.submitButton}>
+              <div className={`${styles.submitButton} ${nunito.className}`}>
                 <Button
                   type={'submit'}
-                  disabled={comingSoon || isSubmitting}
+                  disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Minting' : 'Mint' }
                 </Button>
@@ -337,11 +339,6 @@ const Mint: React.FC = () => {
           }}
         />
       </form>
-      {(requireConnect) && 
-        <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'>
-          <ConnectKitButton />
-        </div>
-      }
       {account.isConnected && siwe.isSignedIn && <MintHistory />}
     </div>
   );
