@@ -1,4 +1,5 @@
-/** DISABLED IN FAVOR OF pages/api due to compatibility issues...
+/** DISABLED IN FAVOR OF pages/api due to compatibility issues with app router...
+ *  See https://github.com/m1guelpf/nextjs13-connectkit-siwe for potential solution
  *  rename this file to `route.ts` and try to build
  * 
  */
@@ -21,11 +22,11 @@ export async function GET(
       return NextResponse.json({}, { status: 401 });
     }
     try {
-      const url = `${process.env.SERVER_BASE_URL}/deposits?${searchParams.toString()}`;
+      const url = `${process.env.AUTOSWAP_BASE_URL}/deposits?${searchParams.toString()}`;
       const response = await fetch(url, {
         method: req.method,
         headers: {
-          NAKADO_API_KEY: process.env.SERVER_API_KEY as string,
+          NAKADO_API_KEY: process.env.AUTOSWAP_API_KEY as string,
         },
       });
       if (!response.ok) {
@@ -52,12 +53,12 @@ export async function POST(
     return NextResponse.json({}, { status: 401 });
   }
   try {
-    const url = `${process.env.SERVER_BASE_URL}/deposits?${searchParams.toString()}`;
+    const url = `${process.env.AUTOSWAP_BASE_URL}/deposits?${searchParams.toString()}`;
     const response = await fetch(url, {
       method: req.method,
       body: req.body,
       headers: {
-        NAKADO_API_KEY: process.env.SERVER_API_KEY as string,
+        NAKADO_API_KEY: process.env.AUTOSWAP_API_KEY as string,
         'Content-Type': 'application/json',
       },
     });

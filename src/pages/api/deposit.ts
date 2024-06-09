@@ -19,7 +19,7 @@ export default async function handler(
     void res.status(401).end();
   }
   try {
-    const url = `${process.env.SERVER_BASE_URL}/deposits?${new URLSearchParams(
+    const url = `${process.env.AUTOSWAP_BASE_URL}/deposits?${new URLSearchParams(
       {
         ...req.query as Record<string, string>,
         ...(eth_account ? { eth_account: eth_account.toLowerCase() } : {}),
@@ -32,7 +32,7 @@ export default async function handler(
       method: req.method,
       body: req.method !== 'GET' ? req.body : undefined,
       headers: {
-        NAKADO_API_KEY: process.env.SERVER_API_KEY as string,
+        NAKADO_API_KEY: process.env.AUTOSWAP_API_KEY as string,
         ...(req.method !== 'GET' && { 'Content-Type': 'application/json' }),
       },
     });
