@@ -80,6 +80,8 @@ export default async function Leaderboard() {
 				</h1>
 				<div>
 					NUSD Rune and BRC-20 holders accrue pro-rata rewards of 31,250 BAMK per block.
+					<br/>
+					Rewards will be released 41,982 blocks after the reward is accrued.
 				</div>
 			</div>
 			<div className="relative overflow-x-auto shadow-md rounded-lg">
