@@ -21,14 +21,13 @@ import { MintHistory } from './History';
 import { unixTimeInSeconds } from '../../utils';
 import EthIcon from '@/icons/eth';
 import BtcIcon from '@/icons/btc';
-import { Nunito } from 'next/font/google'
 import NusdIcon from '../../icons/nusd';
-import SusdeIcon from '@/icons/sUSDe';
-import { ETHENA_SUSDE_TOKEN_CONTRACT, USDF_CONTRACT_ADDRESS_SEPOLIA } from '@/lib/constants';
+import { USDE_CONTRACT_ADDRESS_MAINNET, USDF_CONTRACT_ADDRESS_SEPOLIA } from '@/lib/constants';
+import { CustomConnectKitButton } from '@/components/ConnectKitButton';
+import { nunito } from '@/components/ui/fonts';
+import UsdeIcon from '@/icons/USDe';
 
-const nunito = Nunito({ subsets: ['latin'] })
-
-const SUSDE_TOKEN_DECIMALS = 18;
+const USDE_TOKEN_DECIMALS = 18;
 
 const FieldInfo: React.FC<{ field: FieldApi<any, any, any, any> }> = ({
   field,
@@ -84,7 +83,7 @@ const Mint: React.FC = () => {
           from_eth_account: account.address,
           from_usde_amount: (
             Number(value.sendAmount) *
-            10 ** SUSDE_TOKEN_DECIMALS
+            10 ** USDE_TOKEN_DECIMALS
           ).toString(),
           timestamp: unixTimeInSeconds(),
           to_btc_address: value.receiveAddress,
@@ -97,7 +96,7 @@ const Mint: React.FC = () => {
         const responseData: PostDepositResponse = await response.json();
         if (
           Number(responseData.deposit_usde_total_amount) /
-            10 ** SUSDE_TOKEN_DECIMALS >
+            10 ** USDE_TOKEN_DECIMALS >
           balanceUSDE
         ) {
           return toast.error('Insufficient balance');
@@ -108,7 +107,7 @@ const Mint: React.FC = () => {
             abi: erc20Abi,
             address:
               account.chain?.id === 1
-                ? ETHENA_SUSDE_TOKEN_CONTRACT
+                ? USDE_CONTRACT_ADDRESS_MAINNET
                 : USDF_CONTRACT_ADDRESS_SEPOLIA,
             functionName: 'transfer',
             args: [
@@ -141,15 +140,6 @@ const Mint: React.FC = () => {
     },
   });
 
-  // Set input to current balance
-  // useEffect(() => {
-  //   if (form.getFieldValue('sendAmount') === '' && balanceUSDE) {
-  //     form.setFieldValue('sendAmount', () => balanceUSDE.toString(), {
-  //       touch: true,
-  //     });
-  //   }
-  // }, [balanceUSDE, form]);
-
   // Set 1:1 send/receive USDe/NUSD
   const sendAmountField = form.useField({ name: 'sendAmount' });
   useEffect(() => {
@@ -162,6 +152,9 @@ const Mint: React.FC = () => {
 
   return (
     <div className={styles.exchangeContainer}>
+      <div className='flex justify-end mb-2'>
+        <CustomConnectKitButton />
+      </div>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -199,7 +192,7 @@ const Mint: React.FC = () => {
                       type="number"
                       className={styles.input}
                       placeholder="0.00"
-                      min={1 / 10 ** SUSDE_TOKEN_DECIMALS}
+                      min={1 / 10 ** USDE_TOKEN_DECIMALS}
                       max={balanceUSDE > 0 ? balanceUSDE : undefined}
                       disabled={isSubmitting}
                     />
@@ -207,8 +200,8 @@ const Mint: React.FC = () => {
                   </div>
                   <div>
                     <div className={styles.currencyContainer}>
-                      <SusdeIcon height={24} width={24} />
-                      <div className={styles.coinText}>sUSDe</div>
+                      <UsdeIcon height={24} width={24} />
+                      <div className={styles.coinText}>USDe</div>
                       <div className={styles.networkTagWrapper}>
                         <div className={styles.networkTag}>
                           <div className='bg-[#FAFAFA] rounded-full'>
@@ -321,6 +314,7 @@ const Mint: React.FC = () => {
                 <Button
                   type={'submit'}
                   disabled={isSubmitting}
+                  variant={account.isConnected ? "default" : "secondary"}
                 >
                   {isSubmitting ? 'Minting' : 'Mint' }
                 </Button>

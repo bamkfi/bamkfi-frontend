@@ -1,6 +1,5 @@
 import React from 'react'
 import Link from 'next/link'
-import { Nunito } from 'next/font/google'
 
 import {
 	SEASON_1_BAMK_PER_BLOCK,
@@ -9,9 +8,7 @@ import BamkIcon from '@/icons/bamk'
 import classNames from 'classnames'
 import NusdIcon from '@/icons/nusd'
 import Navigation from './navigation'
-import { CustomConnectKitButton } from './ConnectKitButton'
-
-const nunito = Nunito({ subsets: ['latin'] })
+import { nunito } from './ui/fonts'
 
 export default function Header(props: {
 	data:
@@ -96,9 +93,8 @@ export default function Header(props: {
 					</div>
 				) : null
 				}
-				<CustomConnectKitButton />
 			</div>
-			<div className='sm:hidden container ml-2 mt-3 mb-4'>
+			<div className='sm:hidden container mt-3 mb-4'>
 				<Navigation />
 			</div>
 		</header>

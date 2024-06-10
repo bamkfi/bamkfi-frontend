@@ -6,10 +6,8 @@ import { WagmiProvider, createConfig, fallback, http, webSocket } from 'wagmi';
 import { mainnet, sepolia } from '@wagmi/core/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ConnectKitProvider, getDefaultConfig } from 'connectkit';
-import { Mulish } from 'next/font/google';
 import { siweClient } from '@/siwe/siweClient';
-
-const mulish = Mulish({ subsets: ['latin'] })
+import { mulish } from '../ui/fonts';
 
 const chain = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? mainnet : sepolia;
 const transport = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? fallback([

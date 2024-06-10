@@ -1,10 +1,9 @@
 import { Web3Provider } from '../../components/providers/Web3Provider';
 
-export default function DashboardLayout({
+export default function SwapLayout({
     children,
   }: {
     children: React.ReactNode
   }) {
-    return children;
     return <Web3Provider>{children}</Web3Provider>
   }

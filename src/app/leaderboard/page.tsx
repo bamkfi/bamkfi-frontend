@@ -1,7 +1,5 @@
-import { Nunito } from 'next/font/google'
+import { nunito } from '@/components/ui/fonts'
 import classNames from 'classnames'
-
-const nunito = Nunito({ subsets: ['latin'] })
 
 async function getData() {
 	const leaderboard = await fetch('https://calhounjohn.com/reward/getLeaderboard', {

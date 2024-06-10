@@ -19,17 +19,17 @@ export default function Navigation() {
 				href: '/mint'
 			},
 			{
-				name: 'Docs',
-				href: GITBOOK_URL
-			},
-			{
 				name: 'Leaderboard',
 				href: '/leaderboard'
 			},
 			{
-				name: 'Reward Calculator',
+				name: 'Calculator',
 				href: '/calculator'
-			}
+			},
+			{
+				name: 'Docs',
+				href: GITBOOK_URL
+			},
 		]
 	}, [])
 

@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button'
-import { Nunito } from 'next/font/google'
 import classNames from 'classnames'
 import {
 	BAMK_MARKET_URL,
@@ -12,8 +11,7 @@ import {
 import { Fitty } from '@/components/ui/fitty'
 import NusdIcon from '@/icons/nusd'
 import SusdeIcon from '@/icons/sUSDe'
-
-const nunito = Nunito({ subsets: ['latin'] })
+import { nunito } from '@/components/ui/fonts'
 
 async function getData() {
 	const nusdInfo = await fetch('https://open-api.unisat.io/v1/indexer/brc20/$NUSD/info', {
@@ -210,13 +208,7 @@ export default async function Home() {
 	return (
 		<div className="max-w-screen-xl container flex flex-col gap-8 mt-8">
 			<div className="flex flex-col gap-4 md:ml-12">
-				{/* <div className="flex items-center gap-4">
-					<div className="rounded-full bg-secondary flex p-8 border-2 border-[#F3E9DD4D]">
-						<NusdIcon className="h-14 w-14 stroke-primary" />
-					</div>
-					<h1 className="text-4xl">NUSD</h1>
-				</div> */}
-				<h1 className={classNames(nunito.className, 'max-w-full w-[520px] mt-2 break-words')}>
+				<h1 className={classNames(nunito.className, 'max-w-full w-[520px] mt-2 break-words tracking-[0.08em]')}>
 					<Fitty>BAMK•OF•NAKAMOTO•DOLLAR</Fitty>
 				</h1>
 				{data.bamkRune2Data ? (
@@ -294,20 +286,14 @@ export default async function Home() {
 					solution for money not reliant on the traditional banking system, alongside a globally
 					accessible dollar-denominated savings instrument — the Bitcoin&nbsp;Bond.
 				</h2>
-				{/* <h2 className="max-w-full w-[612px] leading-7">
-					Season 0 was a public mint starting at block {840280}. 6.25% of $BAMK supply was free to inscribe.
-				</h2>
-				<h2 className="max-w-full w-[612px] leading-7">
-					Welcome to Season 1. Starting with the first public purchase of $NUSD at block {SEASON_1_GENESIS_BLOCK}, holders of $NUSD are allocated 6.25% of supply ({SEASON_1_BAMK_PER_BLOCK.toLocaleString()} $BAMK per block) proportionally based on their $NUSD holdings. Season 1 ends at block {SEASON_1_GENESIS_BLOCK + SEASON_1_TOTAL_BLOCKS}.
-				</h2> */}
-				<div className="flex flex-wrap gap-3 max-w-full sm:w-[612px]">
+				<div className={classNames("flex flex-wrap gap-3 max-w-full sm:w-[612px]", nunito.className)} >
 					<a
 						href={BAMK_MARKET_URL}
 						target="_blank"
 						rel="noopener noreferrer"
 						className='flex-grow'
 					>
-						<Button className="w-full h-14 text-lg">Buy BAMK</Button>
+						<Button className="w-full h-14 text-lg uppercase">Buy BAMK</Button>
 					</a>
 					<a
 						href={NUSD_RUNE_MARKET_URL}
@@ -315,7 +301,7 @@ export default async function Home() {
 						rel="noopener noreferrer"
 						className='flex-grow'
 					>
-						<Button className="w-full h-14 text-lg" variant="secondary">
+						<Button className="w-full h-14 text-lg uppercase" variant="secondary">
 							Buy NUSD
 						</Button>
 					</a>

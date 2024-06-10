@@ -1,6 +1,6 @@
 import { useAccount, useReadContract } from 'wagmi';
 import { erc20Abi, Address, formatUnits } from 'viem';
-import { ETHENA_SUSDE_TOKEN_CONTRACT, USDF_CONTRACT_ADDRESS_SEPOLIA } from '@/lib/constants';
+import { USDE_CONTRACT_ADDRESS_MAINNET, USDF_CONTRACT_ADDRESS_SEPOLIA } from '@/lib/constants';
 
 export function useERC20() {
   const account = useAccount();
@@ -8,7 +8,7 @@ export function useERC20() {
     chainId: account.chainId,
     address:
       account.chainId === 1
-        ? ETHENA_SUSDE_TOKEN_CONTRACT
+        ? USDE_CONTRACT_ADDRESS_MAINNET
         : USDF_CONTRACT_ADDRESS_SEPOLIA,
     functionName: 'balanceOf',
     abi: erc20Abi,
