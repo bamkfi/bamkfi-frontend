@@ -11,6 +11,7 @@ import {
 } from '@/lib/constants'
 import { Fitty } from '@/components/ui/fitty'
 import NusdIcon from '@/icons/nusd'
+import SusdeIcon from '@/icons/sUSDe'
 
 const nunito = Nunito({ subsets: ['latin'] })
 
@@ -266,7 +267,7 @@ export default async function Home() {
 						)}
 						{data.susdeBackingUSDValue > 0 && (
 							<a
-								href={`https://etherscan.io/token/${ETHENA_SUSDE_TOKEN_CONTRACT}?a=${ETHENA_SUSDE_BACKING_ACCOUNT}`}
+								href={`https://www.oklink.com/eth/token/${ETHENA_SUSDE_TOKEN_CONTRACT}?address=${ETHENA_SUSDE_BACKING_ACCOUNT}`}
 								className="cursor-pointer"
 								target="_blank"
 								rel="noopener noreferrer"
@@ -275,10 +276,8 @@ export default async function Home() {
 									title="Backed by Ethena sUSDe"
 									className="bg-primary/5 flex text-sm gap-2 px-4 rounded-md h-10 items-center w-max mt-1"
 								>
-									<div className="bg-[#F7931A] p-[0.4rem] rounded-full">
-										<NusdIcon height={14} width={14} className="stroke-primary" />
-									</div>
-									<p>USDe Reserves</p>
+									<SusdeIcon height={27} width={27} className="stroke-primary" />
+									<p>sUSDe Reserves</p>
 									<p className="text-primary font-bold">
 										$
 										{data.susdeBackingUSDValue.toLocaleString(undefined, {
