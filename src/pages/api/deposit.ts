@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { siweServer } from './siwe/siweServer';
+import { siweServer } from '../../siwe/siweServer';
 import {
   GetDepositResponse,
   GetDepositsQueryParams,

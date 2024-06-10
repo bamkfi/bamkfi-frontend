@@ -1,5 +1,5 @@
 export interface GetDepositsQueryParams {
-    eth_account?: string;
+    eth_account?: `0x${string}` | undefined;
     eth_txid?: string;
     pending_only?: boolean;
     limit?: number;
@@ -8,7 +8,7 @@ export interface GetDepositsQueryParams {
   
   export type GetDepositResponse = {
     deposits: {
-      from_eth_account: string;
+      from_eth_account: `0x${string}` | undefined;
       from_usde_amount: string;
       to_btc_address: string;
       btc_fee_per_vb: number;
@@ -24,7 +24,7 @@ export interface GetDepositsQueryParams {
   
   export interface PostDepositRequest {
       timestamp: number,
-      from_eth_account: string,
+      from_eth_account: `0x${string}` | undefined,
       from_usde_amount: string,
       to_btc_address: string,
   }
@@ -37,7 +37,7 @@ export interface GetDepositsQueryParams {
   
   
   export interface PostDepositResponse {
-      deposit_usde_account: string,
+      deposit_usde_account: `0x${string}` | undefined,
       deposit_usde_total_amount: string,
       expires: number,
       request: PostDepositRequest,

@@ -8,10 +8,6 @@ import styles from './Mint.module.css';
 import { useERC20 } from '../../hooks/useERC20';
 import { useAccount, useWriteContract } from 'wagmi';
 import { erc20Abi } from 'viem';
-import {
-  USDE_CONTRACT_ADDRESS_MAINNET,
-  USDF_CONTRACT_ADDRESS_SEPOLIA,
-} from '../../constants';
 import { useModal, useSIWE } from 'connectkit';
 import { ArrowIcon } from '../../icons/ArrowIcon';
 
@@ -27,10 +23,12 @@ import EthIcon from '@/icons/eth';
 import BtcIcon from '@/icons/btc';
 import { Nunito } from 'next/font/google'
 import NusdIcon from '../../icons/nusd';
+import SusdeIcon from '@/icons/sUSDe';
+import { ETHENA_SUSDE_TOKEN_CONTRACT, USDF_CONTRACT_ADDRESS_SEPOLIA } from '@/lib/constants';
 
 const nunito = Nunito({ subsets: ['latin'] })
 
-const USDE_TOKEN_DECIMALS = 18;
+const SUSDE_TOKEN_DECIMALS = 18;
 
 const FieldInfo: React.FC<{ field: FieldApi<any, any, any, any> }> = ({
   field,
@@ -62,7 +60,7 @@ const Mint: React.FC = () => {
       try {
         setIsSubmitting(true);
         const displayAmount = BigInt(value.sendAmount).toLocaleString();
-        if (!account || !account.address || !siwe.isSignedIn) {
+        if (!account.isConnected || !siwe.isSignedIn) {
           return modal.setOpen(true);
         }
 
@@ -86,7 +84,7 @@ const Mint: React.FC = () => {
           from_eth_account: account.address,
           from_usde_amount: (
             Number(value.sendAmount) *
-            10 ** USDE_TOKEN_DECIMALS
+            10 ** SUSDE_TOKEN_DECIMALS
           ).toString(),
           timestamp: unixTimeInSeconds(),
           to_btc_address: value.receiveAddress,
@@ -99,7 +97,7 @@ const Mint: React.FC = () => {
         const responseData: PostDepositResponse = await response.json();
         if (
           Number(responseData.deposit_usde_total_amount) /
-            10 ** USDE_TOKEN_DECIMALS >
+            10 ** SUSDE_TOKEN_DECIMALS >
           balanceUSDE
         ) {
           return toast.error('Insufficient balance');
@@ -110,7 +108,7 @@ const Mint: React.FC = () => {
             abi: erc20Abi,
             address:
               account.chain?.id === 1
-                ? USDE_CONTRACT_ADDRESS_MAINNET
+                ? ETHENA_SUSDE_TOKEN_CONTRACT
                 : USDF_CONTRACT_ADDRESS_SEPOLIA,
             functionName: 'transfer',
             args: [
@@ -162,8 +160,6 @@ const Mint: React.FC = () => {
     );
   }, [form, sendAmountField.state.value]);
 
-  const requireConnect = !account.isConnected || !siwe.isSignedIn;
-
   return (
     <div className={styles.exchangeContainer}>
       <form
@@ -172,9 +168,6 @@ const Mint: React.FC = () => {
           e.stopPropagation();
           void form.handleSubmit();
         }}
-        // className={classNames(
-        //   {['blur-sm']: requireConnect}
-        // )}
       >
         <div className={styles.exchangeBlock}>
           <form.Field
@@ -206,7 +199,7 @@ const Mint: React.FC = () => {
                       type="number"
                       className={styles.input}
                       placeholder="0.00"
-                      min={1 / 10 ** USDE_TOKEN_DECIMALS}
+                      min={1 / 10 ** SUSDE_TOKEN_DECIMALS}
                       max={balanceUSDE > 0 ? balanceUSDE : undefined}
                       disabled={isSubmitting}
                     />
@@ -214,16 +207,13 @@ const Mint: React.FC = () => {
                   </div>
                   <div>
                     <div className={styles.currencyContainer}>
-                      <img
-                        src="/ethena-usde-logo.png"
-                        width={24}
-                        height={24}
-                        alt="USDe icon"
-                      />
-                      <div className={styles.coinText}>USDe</div>
+                      <SusdeIcon height={24} width={24} />
+                      <div className={styles.coinText}>sUSDe</div>
                       <div className={styles.networkTagWrapper}>
                         <div className={styles.networkTag}>
-                          <EthIcon width={20} height={20} />
+                          <div className='bg-[#FAFAFA] rounded-full'>
+                            <EthIcon width={20} height={20} className='p-[2px]' />
+                          </div>
                         </div>
                       </div>
                     </div>

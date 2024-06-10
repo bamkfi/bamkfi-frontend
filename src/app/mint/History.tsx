@@ -155,7 +155,7 @@ export const MintHistory: FC = () => {
 	})
 	if (!getDepositResponse.isFetched) return null
 	const data = getDepositResponse.data
-	if (!data) return null
+	if (!data?.deposits.length) return null
 	const numPages = Math.ceil(data.total / limit)
 	return (
 		<>

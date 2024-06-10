@@ -4,7 +4,7 @@
  * 
  */
 
-import { siweServer } from '../../../pages/api/siwe/siweServer';
+import { siweServer } from '../../../siwe/siweServer';
 import { NextResponse, NextRequest } from 'next/server';
 import {
   PostDepositRequest,

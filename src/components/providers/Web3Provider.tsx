@@ -6,18 +6,13 @@ import { WagmiProvider, createConfig, fallback, http, webSocket } from 'wagmi';
 import { mainnet, sepolia } from '@wagmi/core/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ConnectKitProvider, getDefaultConfig } from 'connectkit';
-import { configureClientSIWE } from 'connectkit-next-siwe';
 import { Mulish } from 'next/font/google';
+import { siweClient } from '@/siwe/siweClient';
 
 const mulish = Mulish({ subsets: ['latin'] })
 
-const siweClient = configureClientSIWE({
-  apiRoutePrefix: '/api/siwe',
-  statement: 'Sign In With Ethereum to prove you control this wallet.',
-});
-
-const chain = process.env.VERCEL_ENV === 'production' ? mainnet : sepolia;
-const transport = process.env.VERCEL_ENV === 'production' ? fallback([
+const chain = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? mainnet : sepolia;
+const transport = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? fallback([
   webSocket(
     `wss://mainnet.infura.io/ws/v3/${process.env.NEXT_PUBLIC_INFURA_ID}`
   ),
@@ -41,7 +36,7 @@ const config = createConfig(
       [chain.id]: transport,
     }
   })
-);
+)
 
 const queryClient = new QueryClient();
 
