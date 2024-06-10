@@ -134,7 +134,7 @@ export const MintHistory: FC = () => {
 	const [page, setPage] = useState(1)
 	const limit = 10
 	const getDepositResponse = useQuery<GetDepositResponse>({
-		queryKey: ['deposit-history', account.address, account.chainId, page],
+		queryKey: ['deposit-history', account.address, page],
 		queryFn: async () => {
 			const response = await fetch(
 				`/api/autoswap/deposits?${new URLSearchParams({
@@ -151,7 +151,7 @@ export const MintHistory: FC = () => {
 			}
 			return response.json()
 		},
-		enabled: !!account.address && !!account.chainId && siwe.isSignedIn
+		enabled: !!account.isConnected && siwe.isSignedIn
 	})
 	if (!getDepositResponse.isFetched) return null
 	const data = getDepositResponse.data
