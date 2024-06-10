@@ -1,4 +1,4 @@
-import { GetDepositResponse } from '../api/deposit/types'
+import { GetDepositResponse } from '../../lib/autoswap'
 import { useQuery } from '@tanstack/react-query'
 import { FC, useState } from 'react'
 import { useAccount } from 'wagmi'
@@ -137,7 +137,7 @@ export const MintHistory: FC = () => {
 		queryKey: ['deposit-history', account.address, account.chainId, page],
 		queryFn: async () => {
 			const response = await fetch(
-				`/api/deposit?${new URLSearchParams({
+				`/api/autoswap/deposits?${new URLSearchParams({
 					eth_account: account.address as string,
 					limit: limit.toString(),
 					offset: ((page - 1) * limit).toString()

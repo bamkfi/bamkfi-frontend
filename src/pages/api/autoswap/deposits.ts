@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { siweServer } from '../../siwe/siweServer';
+import { siweServer } from '../../../siwe/siweServer';
 import {
   GetDepositResponse,
   GetDepositsQueryParams,
   PostDepositRequest,
-} from '../../app/api/deposit/types';
+} from '../../../lib/autoswap';
 
 export default async function handler(
   req: NextApiRequest,

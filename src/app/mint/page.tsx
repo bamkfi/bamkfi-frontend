@@ -15,7 +15,7 @@ import { useForm } from '@tanstack/react-form';
 import type { FieldApi } from '@tanstack/react-form';
 
 import { toast } from 'react-toastify';
-import type { PostDepositRequest, PostDepositResponse } from '../api/deposit/types';
+import type { PostDepositRequest, PostDepositResponse } from '../../lib/autoswap';
 import { Button } from '../../components/ui/button';
 import { MintHistory } from './History';
 import { unixTimeInSeconds } from '../../utils';
@@ -89,7 +89,7 @@ const Mint: React.FC = () => {
           timestamp: unixTimeInSeconds(),
           to_btc_address: value.receiveAddress,
         };
-        const response = await fetch(`/api/deposit` as string, {
+        const response = await fetch(`/api/autoswap/deposits` as string, {
           method: 'POST',
           body: JSON.stringify(reqData),
         });
