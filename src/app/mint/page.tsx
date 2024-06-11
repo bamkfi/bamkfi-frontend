@@ -84,7 +84,7 @@ const Mint: React.FC = () => {
           from_usde_amount: (
             Number(value.sendAmount) *
             10 ** USDE_TOKEN_DECIMALS
-          ).toString(),
+          ),
           timestamp: unixTimeInSeconds(),
           to_btc_address: value.receiveAddress,
         };

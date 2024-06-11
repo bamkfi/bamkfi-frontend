@@ -20,12 +20,12 @@ export interface GetDepositsQueryParams {
       btc_reveal_txid: string | null;
     }[],
     total: number;
-  };
+  } | { error: boolean, message: string };
   
   export interface PostDepositRequest {
       timestamp: number,
       from_eth_account: `0x${string}` | undefined,
-      from_usde_amount: string,
+      from_usde_amount: number,
       to_btc_address: string,
   }
   

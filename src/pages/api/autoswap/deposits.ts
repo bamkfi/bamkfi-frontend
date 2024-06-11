@@ -1,48 +1,58 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { siweServer } from '../../../siwe/siweServer';
-import {
-  GetDepositResponse,
-  GetDepositsQueryParams,
-  PostDepositRequest,
-} from '../../../lib/autoswap';
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<GetDepositResponse | string>
+  res: NextApiResponse,
 ) {
-  const { from_eth_account } =
-    req.body && (JSON.parse(req.body) as PostDepositRequest);
-  const { eth_account } = req.query as GetDepositsQueryParams;
-  const ethAccount = eth_account || from_eth_account;
   const session = await siweServer.getSession(req, res);
+  let ethAccount = ''
+  if (req.method === 'GET') {
+    ethAccount = `${req.query.eth_account}`
+  } else if (req.method === 'POST') {
+    ethAccount = typeof req.body === 'string' ? JSON.parse(req.body).from_eth_account : req.body.from_eth_account;
+  }
   if (!session.address || !ethAccount || session.address !== ethAccount) {
-    void res.status(401).end();
+    res.status(401).end();
+    return;
   }
   try {
-    const url = `${process.env.AUTOSWAP_BASE_URL}/deposits?${new URLSearchParams(
-      {
-        ...req.query as Record<string, string>,
-        ...(eth_account ? { eth_account: eth_account.toLowerCase() } : {}),
-      }
-    )}`;
-    if (req.body.from_eth_account) {
-      req.body.from_eth_account = req.body.from_eth_account.toLowerCase()
+    let response: any;
+    if (req.method === 'GET') {
+      response = await fetch(`${process.env.AUTOSWAP_BASE_URL}/deposits?${new URLSearchParams(
+          {
+            ...req.query as Record<string, string>,
+            eth_account: ethAccount,
+          }
+        )}`, {
+        method: 'GET',
+        headers: {
+          NAKADO_API_KEY: process.env.AUTOSWAP_API_KEY as string,
+        },
+      });
+    } else if (req.method === 'POST') {
+      console.log('POSTING',req.body)
+      response = await fetch(`${process.env.AUTOSWAP_BASE_URL}/deposits`, {
+        method: 'POST',
+        body: req.body,
+        headers: {
+          NAKADO_API_KEY: process.env.AUTOSWAP_API_KEY as string,
+          'Content-Type': 'application/json'
+        },
+      });
     }
-    const response = await fetch(url, {
-      method: req.method,
-      body: req.method !== 'GET' ? req.body : undefined,
-      headers: {
-        NAKADO_API_KEY: process.env.AUTOSWAP_API_KEY as string,
-        ...(req.method !== 'GET' && { 'Content-Type': 'application/json' }),
-      },
-    });
     if (!response.ok) {
-      void res.status(response.status).send(await response.text());
+      console.error(response)
+      res.status(response.status).json({ error: true, message: "Server error" });
+    } else {
+      const data = await response.json();
+      res.status(200).json(data);
     }
-    const data = await response.json();
-    void res.status(200).json(data);
   } catch (error) {
-    console.error('Proxy API Error:', error);
-    void res.status(500).send(JSON.stringify(error));
+    console.error('Deposits Proxy API Error:', error);
+    res.status(500).end();
+  } finally {
+    console.error('Deposits Proxy API Error');
+    res.status(500).end();
   }
 }
