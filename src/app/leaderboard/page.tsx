@@ -16,13 +16,13 @@ async function getData() {
   return response.json();
 }
 
-async function getRewardsByAddress(address: string) {
-  const response = await fetch(`/api/getRewardsByAddress?address=${address}`);
-  if (!response.ok) {
-    return null;
-  }
-  return response.json();
-}
+// async function getRewardsByAddress(address: string) {
+//   const response = await fetch(`/api/getRewardsByAddress?address=${address}`);
+//   if (!response.ok) {
+//     return null;
+//   }
+//   return response.json();
+// }
 
 function shortenAddress(address?: string): string {
   if (!address || address.length <= 10) return address || '';
@@ -96,12 +96,7 @@ export default function Leaderboard() {
           if (filtered.length > 0) {
             setFilteredResults(filtered);
           } else {
-            const result = await getRewardsByAddress(searchTerm);
-            if (result) {
-              setFilteredResults([result]);
-            } else {
-              setFilteredResults([]);
-            }
+			setFilteredResults([]);
           }
         } else {
           setFilteredResults(data.leaderboard_data?.rewards || []);
