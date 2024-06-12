@@ -164,7 +164,7 @@ const Mint: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"mint" | "history">("mint")
 
   return (
-    <div className={styles.exchangeContainer}>
+    <div className={classNames(styles.exchangeContainer, "px-4")}>
       <div className='flex justify-between mb-2'>
         <div className="flex items-center gap-4 text-sm">
             {tabs.map(t => (
