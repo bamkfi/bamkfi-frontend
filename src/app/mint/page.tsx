@@ -15,10 +15,8 @@ import { useForm } from '@tanstack/react-form';
 import type { FieldApi } from '@tanstack/react-form';
 
 import { toast } from 'react-toastify';
-import type { PostDepositRequest, PostDepositResponse } from '../../lib/autoswap';
 import { Button } from '../../components/ui/button';
 import { MintHistory } from './History';
-import { unixTimeInSeconds } from '../../utils';
 import EthIcon from '@/icons/eth';
 import BtcIcon from '@/icons/btc';
 import NusdIcon from '../../icons/nusd';
@@ -26,6 +24,7 @@ import { USDE_CONTRACT_ADDRESS_MAINNET, USDF_CONTRACT_ADDRESS_SEPOLIA } from '@/
 import { CustomConnectKitButton } from '@/components/ConnectKitButton';
 import { nunito } from '@/components/ui/fonts';
 import UsdeIcon from '@/icons/USDe';
+import classNames from 'classnames';
 
 const USDE_TOKEN_DECIMALS = 18;
 
@@ -79,13 +78,12 @@ const Mint: React.FC = () => {
           return toast.error(error);
         }
 
-        const reqData: PostDepositRequest = {
+        const reqData = {
           from_eth_account: account.address,
           from_usde_amount: (
             Number(value.sendAmount) *
             10 ** USDE_TOKEN_DECIMALS
           ),
-          timestamp: unixTimeInSeconds(),
           to_btc_address: value.receiveAddress,
         };
         const response = await fetch(`/api/autoswap/deposits` as string, {
@@ -93,7 +91,7 @@ const Mint: React.FC = () => {
           body: JSON.stringify(reqData),
         });
         if (!response.ok) throw new Error('Error requesting deposit');
-        const responseData: PostDepositResponse = await response.json();
+        const responseData = await response.json();
         if (
           Number(responseData.deposit_usde_total_amount) /
             10 ** USDE_TOKEN_DECIMALS >
@@ -126,7 +124,7 @@ const Mint: React.FC = () => {
               );
             },
             onSuccess: async () => {
-              toast.success(`Minted ${displayAmount} NUSD.`);
+              toast.success(`Successful order for ${displayAmount} NUSD.`);
               form.reset();
             },
           }
@@ -150,182 +148,215 @@ const Mint: React.FC = () => {
     );
   }, [form, sendAmountField.state.value]);
 
+	const tabs = React.useMemo(() => {
+		return [
+			{
+				label: 'Mint',
+				value: 'mint'
+			},
+			{
+				label: 'History',
+				value: 'history'
+			},
+		] as const
+	}, [])
+
+  const [activeTab, setActiveTab] = useState<"mint" | "history">("mint")
+
   return (
     <div className={styles.exchangeContainer}>
-      <div className='flex justify-end mb-2'>
+      <div className='flex justify-between mb-2'>
+        <div className="flex items-center gap-4 text-sm">
+            {tabs.map(t => (
+                <button
+                  key={t.value}
+                  className={classNames(
+                    `ml-2 pb-1 transition-colors text-foreground/60 hover:text-foreground/80`, 
+                    {['border-b border-current border-orange-400 text-orange-400 hover:text-orange-400']: t.value === activeTab }
+                  )}
+                  onClick={() => setActiveTab(t.value)}
+                >
+                  {t.label}
+                </button>
+            ))}
+        </div>
         <CustomConnectKitButton />
       </div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          void form.handleSubmit();
-        }}
-      >
-        <div className={styles.exchangeBlock}>
-          <form.Field
-            name="sendAmount"
-            validators={
-              {
-                // TODO: fix this validator, it is not running
-                //   onChange: ({value}) => {
-                //     if (!value || value && (Number(value) < 0 || isNaN(Number(value)))) {
-                //         return 'Invalid amount'
-                //     }
-                //     console.log('result', 1)
-                //   },
-              }
-            }
-            children={(field) => (
-              <>
-                <label htmlFor={field.name} className={styles.label}>
-                  You send
-                </label>
-                <div className={styles.inputGroup}>
-                  <div>
-                    <input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      type="number"
-                      className={styles.input}
-                      placeholder="0.00"
-                      min={1 / 10 ** USDE_TOKEN_DECIMALS}
-                      max={balanceUSDE > 0 ? balanceUSDE : undefined}
-                      disabled={isSubmitting}
-                    />
-                    <FieldInfo field={field} />
-                  </div>
-                  <div>
-                    <div className={styles.currencyContainer}>
-                      <UsdeIcon height={24} width={24} />
-                      <div className={styles.coinText}>USDe</div>
-                      <div className={styles.networkTagWrapper}>
-                        <div className={styles.networkTag}>
-                          <div className='bg-[#FAFAFA] rounded-full'>
-                            <EthIcon width={20} height={20} className='p-[2px]' />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {account.isConnected && (
-                      <div className={styles.balanceContainer}>
-                        <div className={styles.balance}>
-                          Balance: {balanceUSDE.toLocaleString()}
-                        </div>
-                        {/* <div className={styles.maxButton}>Max</div> */}{' '}
-                        {/* TODO */}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-          />
-        </div>
-
-        <div className={styles.arrow}>
-          <ArrowIcon />
-        </div>
-
-        <div className={styles.exchangeBlock}>
-          <form.Field
-            name="receiveAmount"
-            children={(field) => (
-              <>
-                <label htmlFor={field.name} className={styles.label}>
-                  You receive
-                </label>
-                <div className={styles.inputGroup}>
-                    <input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      type="number"
-                      className={styles.input}
-                      placeholder="0.00"
-                      disabled
-                    />
-                    <FieldInfo field={field} />
-                  <div>
-                    <div className={styles.currencyContainer}>
-                      <div className="bg-[#F7931A] p-[0.4rem] rounded-full">
-                        <NusdIcon height={14} width={14} className="stroke-primary" />
-                      </div>
-                      <div className={styles.coinText}>
-                        <div>NUSD</div>
-                      </div>
-                      <div className={styles.networkTagWrapper}>
-                        <div className={styles.networkTag}>
-                          <BtcIcon width={20} height={20} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          />
-          <div style={{ marginTop: '0.5rem' }}>
+      {activeTab === 'mint' ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            void form.handleSubmit();
+          }}
+        >
+          <div className={styles.exchangeBlock}>
             <form.Field
-              name="receiveAddress"
-              validators={{
-                onChange: ({ value }) =>
-                  !value.trim() || value.trim().length < 26
-                    ? 'Invalid address'
-                    : undefined,
-              }}
+              name="sendAmount"
+              validators={
+                {
+                  // TODO: fix this validator, it is not running
+                  //   onChange: ({value}) => {
+                  //     if (!value || value && (Number(value) < 0 || isNaN(Number(value)))) {
+                  //         return 'Invalid amount'
+                  //     }
+                  //     console.log('result', 1)
+                  //   },
+                }
+              }
               children={(field) => (
                 <>
                   <label htmlFor={field.name} className={styles.label}>
-                    To address
+                    You send
                   </label>
-                  <input
-                    id={field.name}
-                    name={field.name}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    type="text"
-                    className={styles.input}
-                    placeholder="bc1p..."
-                    disabled={isSubmitting}
-                  />
-                  <FieldInfo field={field} />
+                  <div className={styles.inputGroup}>
+                    <div>
+                      <input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        type="number"
+                        className={styles.input}
+                        placeholder="0.00"
+                        min={1 / 10 ** USDE_TOKEN_DECIMALS}
+                        max={balanceUSDE > 0 ? balanceUSDE : undefined}
+                        disabled={isSubmitting}
+                      />
+                      <FieldInfo field={field} />
+                    </div>
+                    <div>
+                      <div className={styles.currencyContainer}>
+                        <UsdeIcon height={24} width={24} />
+                        <div className={styles.coinText}>USDe</div>
+                        <div className={styles.networkTagWrapper}>
+                          <div className={styles.networkTag}>
+                            <div className='bg-[#FAFAFA] rounded-full'>
+                              <EthIcon width={20} height={20} className='p-[2px]' />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      {account.isConnected && (
+                        <div className={styles.balanceContainer}>
+                          <div className={styles.balance}>
+                            Balance: {balanceUSDE.toLocaleString()}
+                          </div>
+                          {/* <div className={styles.maxButton}>Max</div> */}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </>
               )}
             />
           </div>
-        </div>
 
-        {/* <div className={styles.fee}>
-                    Fee estimate: {fee}
-                </div> */}
+          <div className={styles.arrow}>
+            <ArrowIcon />
+          </div>
 
-        <form.Subscribe
-          selector={(state) => [state.canSubmit]}
-          children={([canSubmit]) => {
-            return (
-              <div className={`${styles.submitButton} ${nunito.className}`}>
-                <Button
-                  type={'submit'}
-                  disabled={isSubmitting}
-                  variant={account.isConnected ? "default" : "secondary"}
-                >
-                  {isSubmitting ? 'Minting' : 'Mint' }
-                </Button>
-              </div>
-            );
-          }}
-        />
-      </form>
-      {account.isConnected && siwe.isSignedIn && <MintHistory />}
+          <div className={styles.exchangeBlock}>
+            <form.Field
+              name="receiveAmount"
+              children={(field) => (
+                <>
+                  <label htmlFor={field.name} className={styles.label}>
+                    You receive
+                  </label>
+                  <div className={styles.inputGroup}>
+                      <input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        type="number"
+                        className={styles.input}
+                        placeholder="0.00"
+                        disabled
+                      />
+                      <FieldInfo field={field} />
+                    <div>
+                      <div className={styles.currencyContainer}>
+                        <div className="bg-[#F7931A] p-[0.4rem] rounded-full">
+                          <NusdIcon height={14} width={14} className="stroke-primary" />
+                        </div>
+                        <div className={styles.coinText}>
+                          <div>NUSD</div>
+                        </div>
+                        <div className={styles.networkTagWrapper}>
+                          <div className={styles.networkTag}>
+                            <BtcIcon width={20} height={20} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            />
+            <div style={{ marginTop: '0.5rem' }}>
+              <form.Field
+                name="receiveAddress"
+                validators={{
+                  onChange: ({ value }) =>
+                    !value.trim() || value.trim().length < 26
+                      ? 'Invalid address'
+                      : undefined,
+                }}
+                children={(field) => (
+                  <>
+                    <label htmlFor={field.name} className={styles.label}>
+                      To address
+                    </label>
+                    <input
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      type="text"
+                      className={styles.input}
+                      placeholder="bc1p..."
+                      disabled={isSubmitting}
+                    />
+                    <FieldInfo field={field} />
+                  </>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* <div className={styles.fee}>
+              Fee estimate: {fee}
+          </div> */}
+
+          <form.Subscribe
+            selector={(state) => [state.canSubmit]}
+            children={([canSubmit]) => {
+              return (
+                <div className={`${styles.submitButton} ${nunito.className}`}>
+                  <Button
+                    type={'submit'}
+                    disabled={isSubmitting || !account.isConnected || !siwe.isSignedIn}
+                    variant={"default"}
+                  >
+                    {isSubmitting ? 'Minting' : 'Mint' }
+                  </Button>
+                </div>
+              );
+            }}
+          />
+        </form>
+      ) : activeTab === 'history' ? (
+        <>
+          {(account.isConnected && siwe.isSignedIn) ? <MintHistory /> : <div className='text-center'>Connect to view history</div>}
+        </>
+      ) : null}
     </div>
   );
 };
 
-export default Mint;
+export default Mint

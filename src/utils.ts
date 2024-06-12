@@ -10,12 +10,8 @@ export const explorerLink = (
       }etherscan.io/${type}}/${value}`;
 };
 export function isExpired(unixTime: number): boolean {
-  const currentTime = unixTimeInSeconds();
+  const currentTime = Math.floor(Date.now() / 1000);
   return unixTime < currentTime;
-}
-
-export function unixTimeInSeconds() {
-  return Math.floor(Date.now() / 1000);
 }
 
 export function shortenAddress(address: string) {

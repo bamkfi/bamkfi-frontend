@@ -10,7 +10,7 @@ export const CustomConnectKitButton = () => {
     <ConnectKitButton.Custom>
       {({ isConnected, isConnecting, show, hide, address, ensName, chain }) => {
         return (
-          <Button onClick={show} variant={isConnected ? 'ghost' : 'default'}>
+          <Button onClick={show} variant={isConnected ? 'ghost' : 'default'} disabled={isConnecting}>
             <div className="flex gap-2 items-center">
               {(isConnected && !siwe.isSignedIn) && (
                 <div className="relative">
