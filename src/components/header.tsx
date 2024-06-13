@@ -9,53 +9,16 @@ import classNames from 'classnames'
 import NusdIcon from '@/icons/nusd'
 import Navigation from './navigation'
 import { nunito } from './ui/fonts'
+import { AppData } from '@/app/layout'
 
 export default function Header(props: {
-	data:
-		| {
-				nusdInfoData?: undefined
-				bestHeightData?: undefined
-				bamkRuneData?: undefined
-				nusdRuneData?: undefined
-				btcPriceData?: undefined
-		  }
-		| {
-				nusdInfoData: {
-					minted: string
-				}
-				bestHeightData: {
-					height: number
-				}
-				nusdRuneData: {
-					"amount": string,
-					"runeid": string,
-					"rune": string,
-					"spacedRune": string,
-					"symbol": string,
-				}
-				bamkRuneData: {
-					tick: string;
-					symbol: string;
-					curPrice: number;
-					changePrice: number;
-					btcVolume: number;
-					amountVolume: number;
-					cap: string;
-					capUSD: string;
-					warning: boolean;
-				}
-				btcPriceData: {
-					bitcoin: {
-					  usd: number;
-					}
-				}
-		  }
+	data: AppData
 }) {
 	const { data } = props
 
 	let APY = 0;
-	if (data.bamkRuneData && data.nusdRuneData && data.btcPriceData && data.nusdInfoData) {
-		const usdPricePerBamk = data.bamkRuneData?.curPrice / 100_000_000 * data.btcPriceData.bitcoin.usd;
+	if (data.bamkRune2Data && data.nusdRuneData && data.btcPriceData && data.nusdInfoData) {
+		const usdPricePerBamk = Number(data.bamkRune2Data.floorUnitPrice.formatted) / 100_000_000 * data.btcPriceData.bitcoin.usd;
 		const nusdRuneCirculating = 2_100_000_000_000_000 - Number(data.nusdRuneData.amount)
 		const nusdBrc20Circulating = Number(data.nusdInfoData.minted)
 		const nusdTotalCirculating = nusdRuneCirculating + nusdBrc20Circulating

@@ -172,6 +172,8 @@ async function getData() {
 	}
 }
 
+export type AppData = Awaited<ReturnType<typeof getData>>
+
 export default async function RootLayout({
 	children
 }: Readonly<{
