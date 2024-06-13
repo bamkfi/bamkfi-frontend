@@ -9,6 +9,8 @@ import { useSIWE } from 'connectkit';
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { toast } from 'react-toastify';
+import { CircleCheckIcon } from '@/icons/CircleCheckIcon';
+import { WarningOutlineIcon } from '@/icons/WarningOutlineIcon';
 
 export default function AuthorizedMinterDashboard() {
     const siwe = useSIWE();
@@ -44,15 +46,15 @@ export default function AuthorizedMinterDashboard() {
         </div>
     }
 	return (
-		<div className="max-w-screen-xl container flex flex-col gap-8 sm:mt-8">
-			<div className="mx-3 md:mx-8 flex justify-between">
-				<h1 className={classNames(nunito.className, 'text-3xl mt-2')}>
-					Minter Dashboard
-				</h1>
-                <div className='flex gap-2 items-center'>
-                    <Button onClick={handleRefresh} disabled={unminted.isFetching || refreshTimeout} variant="outline">
-                        Refresh
-                    </Button>
+		<div className="max-w-screen-xl container flex flex-col sm:mt-8 mb-4">
+			<div className="mx-3 md:mx-8 flex justify-between items-end flex-wrap">
+                <h1 className={classNames(nunito.className, 'text-3xl mt-2 mb-4')}>
+                    Minter Dashboard
+                </h1>
+                <Button className='mb-4' onClick={handleRefresh} disabled={unminted.isFetching || refreshTimeout} variant="outline">
+                    Refresh
+                </Button>
+                <div className='mb-4'>
                     <CustomConnectKitButton />
                 </div>
 			</div>
@@ -79,7 +81,7 @@ export default function AuthorizedMinterDashboard() {
                                 <th scope="col" className="px-6 py-3">
                                     BTC Transfer TXID
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-right">
+                                <th scope="col" className="px-6 py-3 text-center">
                                     Action
                                 </th>
                             </tr>
@@ -87,8 +89,7 @@ export default function AuthorizedMinterDashboard() {
                         <tbody>
                             {unminted.data.deposits?.map((data: any) => {
                                 return <TableRow key={data.uuid} data={data} />
-                            }
-                            )}
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -105,9 +106,13 @@ function TableRow({ data }: {
     data: any
 }) {
     const account = useAccount()
+    const [btcTxid, setBtcTxid] = useState('')
+    const [pendingSaveBtcTxid, setPendingBtcTxid] = useState('')
+    const [isSaving, setIsSaving] = useState(false)
+    const [lastSaveResult, setLastSaveResult] = useState<'success' | 'error' | null>(null)
+    const [isEditing, setIsEditing] = useState(false)
     const handleSave = async () => {
         try {
-            setIsSaved(false)
             setIsSaving(true)
             const result = await fetch(
                 `/api/autoswap/admin`,
@@ -124,19 +129,29 @@ function TableRow({ data }: {
                 }
             )
             if (!result.ok) {
-                throw new Error("Failed to save.")
+                throw new Error("Error saving")
             }
-            setIsSaved(true)
+            setBtcTxid(pendingSaveBtcTxid)
+            setLastSaveResult('success')
+            setIsEditing(false)
             toast.success("Saved")
         } catch (e: any) {
-            toast.error(e)
+            toast.error(e.message)
+            setLastSaveResult("error")
         } finally {
             setIsSaving(false)
         }
     }
-    const [btcTxid, setBtcTxid] = useState('')
-    const [isSaving, setIsSaving] = useState(false)
-    const [isSaved, setIsSaved] = useState(false)
+    const handleEdit = () => setIsEditing(true)
+    const handleCancel = () => {
+        setIsEditing(false)
+        setPendingBtcTxid(btcTxid)
+        if (btcTxid) {
+            setLastSaveResult("success")
+        } else {
+            setLastSaveResult(null)
+        }
+    }
     return (
         <tr className="border-b bg-zinc-800 border-zinc-700 font-mono">
             <td scope="row" className="px-6 py-4 whitespace-nowrap">
@@ -154,21 +169,46 @@ function TableRow({ data }: {
             <td scope="row" className="px-6 py-4 whitespace-nowrap">
                 {(BigInt(data.from_usde_amount) / BigInt(10 ** 18)).toLocaleString()}
             </td>
-            <td className="px-6 py-4 text-right">
+            <td className="px-6 py-4 text-right flex gap-2 items-center">
                 <input
                     type="text"
-                    value={btcTxid}
-                    onChange={(e) => setBtcTxid(e.target.value)}
+                    value={pendingSaveBtcTxid}
+                    onChange={(e) => {
+                        setPendingBtcTxid(e.target.value)
+                    }}
+                    disabled={!isEditing}
                     className={classNames(
-                        "bg-zinc-300 text-black flex text-sm gap-2 px-2 py-2 rounded-md border focus:ring-primary focus:border-primary",
-                        { ["bg-green-600"]: isSaved}
+                        'bg-zinc-300 text-black w-[68ch] text-center font-mono text-sm gap-2 px-2 py-2 rounded-md border focus:ring-primary focus:border-primary',
+                        { 'bg-zinc-600 pointer-events-none': !isEditing},
                     )}
                 />
+                {lastSaveResult === 'success' && !isEditing ? <CircleCheckIcon size="1rem" fill="rgb(60, 179, 113)" /> 
+                : lastSaveResult === 'error' ? <WarningOutlineIcon size="1rem" fill="rgb(205, 92, 92)" /> 
+                : null}
             </td>
-            <td className="px-6 py-4 text-right">
-                <Button onClick={handleSave} disabled={isSaving}>
-                    Save
-                </Button>
+            <td>
+                <div className="px-6 py-4 text-right flex gap-2 items-center">
+                    <Button
+                        onClick={handleCancel}
+                        disabled={!isEditing}
+                        variant="destructive"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleEdit}
+                        disabled={isEditing}
+                        variant="secondary"
+                    >
+                        Edit
+                    </Button>
+                    <Button
+                        onClick={handleSave}
+                        disabled={isSaving || btcTxid === pendingSaveBtcTxid}
+                    >
+                        Save
+                    </Button>
+                </div>
             </td>
         </tr> 
     )
