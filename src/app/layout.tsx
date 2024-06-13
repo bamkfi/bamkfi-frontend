@@ -5,9 +5,10 @@ import { ThemeProvider } from "@/components/theme-provider"
 import Header from '@/components/header'
 import Footer from '@/components/footer'
 import classNames from 'classnames'
-import { Web3Provider } from "@/components/providers/Web3Provider";
 import { DataProvider } from "@/app/context/datacontext";
 import { mulish } from "@/components/ui/fonts";
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export const metadata: Metadata = {
 	title: 'BAMK•OF•NAKAMOTO•DOLLAR',
@@ -193,6 +194,7 @@ export default async function RootLayout({
 							{children}
 						</main>
 						<Footer />
+						<ToastContainer theme="dark" position="bottom-center" newestOnTop hideProgressBar closeButton={false} className="mb-4" />
 					</DataProvider>
 				</ThemeProvider>
 			</body>

@@ -57,25 +57,19 @@ const Mint: React.FC = () => {
     onSubmit: async ({ value }) => {
       try {
         setIsSubmitting(true);
-        const displayAmount = BigInt(value.sendAmount).toLocaleString();
-        if (!account.isConnected || !siwe.isSignedIn) {
-          return modal.setOpen(true);
-        }
+        if (!account.isConnected) return modal.setOpen(true);
+        if (!siwe.isSignedIn) return modal.openSIWE();
 
         // Field validator not working for "sendAmount" so validating here instead
         // https://tanstack.com/form/latest/docs/framework/react/guides/validation#validation-at-field-level-vs-at-form-level
-        let error = '';
         if (
           !value.sendAmount ||
           (value.sendAmount &&
             (Number(value.sendAmount) < 0 || isNaN(Number(value.sendAmount))))
         ) {
-          error = 'Invalid amount';
+          throw new Error('Invalid amount');
         } else if (Number(value.sendAmount) > balanceUSDE) {
-          error = 'Insufficient balance';
-        }
-        if (error) {
-          return toast.error(error);
+          throw new Error('Insufficient balance');
         }
 
         const reqData = {
@@ -90,14 +84,14 @@ const Mint: React.FC = () => {
           method: 'POST',
           body: JSON.stringify(reqData),
         });
-        if (!response.ok) throw new Error('Error requesting deposit');
+        if (!response.ok) throw new Error('Server error');
         const responseData = await response.json();
         if (
           Number(responseData.deposit_usde_total_amount) /
             10 ** USDE_TOKEN_DECIMALS >
           balanceUSDE
         ) {
-          return toast.error('Insufficient balance');
+          throw new Error("Insufficient balance")
         }
         const txid = await writeContractAsync(
           {
@@ -117,20 +111,18 @@ const Mint: React.FC = () => {
             onSettled: async () => {},
             onError: async (e: any) => {
               console.error(e);
-              toast.error(
-                'Error: ' +
-                  e.message.slice(0, 150) +
-                  '... Check console for details.'
-              );
+              toast.error(e.message);
             },
             onSuccess: async () => {
-              toast.success(`Successful order for ${displayAmount} NUSD.`);
+              const displayAmount = BigInt(value.sendAmount).toLocaleString();
+              toast.success(`Successfully ordered ${displayAmount} NUSD`);
               form.reset();
             },
           }
         );
         console.log('txid', txid);
-      } catch (err) {
+      } catch (err: any) {
+        toast.error(err.message)
         console.error(err);
       } finally {
         setIsSubmitting(false);
@@ -340,7 +332,7 @@ const Mint: React.FC = () => {
                 <div className={`${styles.submitButton} ${nunito.className}`}>
                   <Button
                     type={'submit'}
-                    disabled={isSubmitting || !account.isConnected || !siwe.isSignedIn}
+                    disabled={isSubmitting}
                     variant={"default"}
                   >
                     {isSubmitting ? 'Minting' : 'Mint' }
@@ -352,7 +344,7 @@ const Mint: React.FC = () => {
         </form>
       ) : activeTab === 'history' ? (
         <>
-          {(account.isConnected && siwe.isSignedIn) ? <MintHistory /> : <div className='text-center'>Connect to view history</div>}
+          {(account.isConnected && siwe.isSignedIn) ? <MintHistory /> : <div className='text-center mt-8'>Connect to view history</div>}
         </>
       ) : null}
     </div>
