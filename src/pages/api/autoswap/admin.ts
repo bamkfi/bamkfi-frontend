@@ -15,12 +15,7 @@ export default async function handler(
     ethAccount = typeof req.body === 'string' ? JSON.parse(req.body).eth_account : req.body.eth_account;
   }
 
-  console.group('Authorizing with ETH')
-  console.log('session.address', session.address)
-  console.log('ethAccount', ethAccount)
-  console.log('process.env.AUTHORIZED_MINTER_ETH_ADDRESS', process.env.AUTHORIZED_MINTER_ETH_ADDRESS)
-  console.groupEnd()
-  if (!session.address || !ethAccount || !process.env.AUTHORIZED_MINTER_ETH_ADDRESS || session.address !== process.env.AUTHORIZED_MINTER_ETH_ADDRESS) {
+  if (!session.address || !ethAccount || !process.env.AUTHORIZED_MINTER_ETH_ADDRESS || session.address.toLowerCase() !== process.env.AUTHORIZED_MINTER_ETH_ADDRESS.toLowerCase()) {
     res.status(401).end();
     return;
   }

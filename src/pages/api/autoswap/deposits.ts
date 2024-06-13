@@ -12,7 +12,7 @@ export default async function handler(
   } else if (req.method === 'POST') {
     ethAccount = typeof req.body === 'string' ? JSON.parse(req.body).from_eth_account : req.body.from_eth_account;
   }
-  if (!session.address || !ethAccount || session.address !== ethAccount) {
+  if (!session.address || !ethAccount || session.address.toLowerCase() !== ethAccount.toLowerCase()) {
     res.status(401).end();
     return;
   }
