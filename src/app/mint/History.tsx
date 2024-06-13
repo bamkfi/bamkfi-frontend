@@ -148,8 +148,10 @@ export const MintHistory: FC = () => {
 				}
 			)
 			if (!response.ok) {
-				throw new Error('Deposit history response was not ok')
+				toast.warning("Error refreshing status")
+				return null;
 			}
+			toast.success("Refreshed status")
 			return response.json()
 		},
 		enabled: !!account.isConnected && siwe.isSignedIn
@@ -158,11 +160,6 @@ export const MintHistory: FC = () => {
 	const handleRefresh = async () => {
 		setRefreshTimeout(true)
 		getDepositResponse.refetch()
-		// if (result.isSuccess) {
-		// 	toast.success("Refreshed order status")
-		// } else {
-		// 	toast.error("Error refreshing order status")
-		// }
 		setTimeout(() => {
 			setRefreshTimeout(false)
 		}, 10_000)
@@ -177,7 +174,7 @@ export const MintHistory: FC = () => {
 			<div className={styles.cardsContainer}>
 				{needsRefresh && (
 					<div className='flex justify-around'>
-						<Button variant="outline" className='flex items-center gap-1' onClick={handleRefresh} disabled={refreshTimeout}>
+						<Button variant="outline" className='flex items-center gap-1' onClick={handleRefresh} disabled={getDepositResponse.isFetching || refreshTimeout}>
 							<RefreshIcon size={"1rem"} fill='white' />
 							<div>Refresh Status</div>
 						</Button>

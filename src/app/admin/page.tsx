@@ -14,16 +14,33 @@ export default function AuthorizedMinterDashboard() {
     const siwe = useSIWE();
     const account = useAccount();
     const unminted = useQuery({
-        queryKey: ['unminted'],
+        queryKey: ['unminted', account.address],
         queryFn: () => fetch(
                 `/api/autoswap/admin?${new URLSearchParams({ eth_account: account.address as string }).toString()}`
-            ).then(res => res.ok ? res.json() : null),
+            ).then(res => {
+                if (res.ok) {
+                    return res.json()
+                }
+                else toast.error(`Error loading data (${res.status} ${res.statusText})`)
+            }),
         enabled: account.isConnected && siwe.isSignedIn,
     })
-    if (!account.isConnected || !siwe.isSignedIn || unminted.data === null) {
+	const [refreshTimeout, setRefreshTimeout] = useState(false)
+	const handleRefresh = async () => {
+		setRefreshTimeout(true)
+		const result = await unminted.refetch()
+        if (result.isSuccess) {
+            toast.success("Refresh successful")
+        } else {
+            toast.error(`Refresh error${result.error?.message ? ` (${result.error.message})` : '' })`)
+        }
+		setTimeout(() => {
+			setRefreshTimeout(false)
+		}, 5_000)
+	}
+    if (!account.isConnected || !siwe.isSignedIn) {
         return <div className='container text-center mt-8'>
             <CustomConnectKitButton />
-            {unminted.data === null && (<div>You are not authorized</div>)}
         </div>
     }
 	return (
@@ -33,7 +50,7 @@ export default function AuthorizedMinterDashboard() {
 					Minter Dashboard
 				</h1>
                 <div className='flex gap-2 items-center'>
-                    <Button onClick={() => unminted.refetch()} disabled={unminted.isFetching} variant="outline">
+                    <Button onClick={handleRefresh} disabled={unminted.isFetching || refreshTimeout} variant="outline">
                         Refresh
                     </Button>
                     <CustomConnectKitButton />
@@ -69,7 +86,6 @@ export default function AuthorizedMinterDashboard() {
                         </thead>
                         <tbody>
                             {unminted.data.deposits?.map((data: any) => {
-                                console.log('renderning table row', data)
                                 return <TableRow key={data.uuid} data={data} />
                             }
                             )}
