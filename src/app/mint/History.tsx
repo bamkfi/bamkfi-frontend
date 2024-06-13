@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useSIWE } from 'connectkit'
 import styles from './History.module.css'
@@ -100,7 +100,7 @@ const MintHistoryCard: React.FC<{
 				{props.status === 'In Progress' && (
 					<div>
 						{!props.ethTxid ? (
-							<div className="text-center opacity-75">
+							<div className="text-center opacity-75 text-sm mt-4">
 								Please wait a minute for us to confirm payment. Order expires in{' '}
 								<CountdownTimer targetUnixTimestamp={props.expires} />.
 							</div>
@@ -134,6 +134,7 @@ export const MintHistory: FC = () => {
 	const siwe = useSIWE()
 	const [page, setPage] = useState(1)
 	const limit = 5
+	const needsRefreshRef = useRef(false)
 	const getDepositResponse = useQuery({
 		queryKey: ['deposit-history', account.address, page],
 		queryFn: async () => {
@@ -148,38 +149,22 @@ export const MintHistory: FC = () => {
 				}
 			)
 			if (!response.ok) {
-				toast.warning("Error refreshing status")
 				return null;
 			}
-			toast.success("Refreshed status")
-			return response.json()
+			const data = await response.json()
+			needsRefreshRef.current = data.deposits.some((d: any) => getStatus({ btcTxid: d.btc_txid, ethTxid: d.eth_txid, expires: d.expires }) === 'In Progress');
+			return data
 		},
-		enabled: !!account.isConnected && siwe.isSignedIn
+		enabled: !!account.isConnected && siwe.isSignedIn,
+		refetchInterval: needsRefreshRef.current ? 30_000 : false
 	})
-	const [refreshTimeout, setRefreshTimeout] = useState(false)
-	const handleRefresh = async () => {
-		setRefreshTimeout(true)
-		getDepositResponse.refetch()
-		setTimeout(() => {
-			setRefreshTimeout(false)
-		}, 10_000)
-	}
 	if (getDepositResponse.isFetching) return <div className='text-center mt-2'>Loading...</div>
 	const data = getDepositResponse.data
 	if (!data?.total || !data?.deposits.length) return <div className='text-center mt-2'>No order history</div>
 	const numPages = Math.ceil(data.total / limit)
-	const needsRefresh = data.deposits.some((d: any) => getStatus({ btcTxid: d.btc_txid, ethTxid: d.eth_txid, expires: d.expires }) === 'In Progress');
 	return (
 		<>
 			<div className={styles.cardsContainer}>
-				{needsRefresh && (
-					<div className='flex justify-around'>
-						<Button variant="outline" className='flex items-center gap-1' onClick={handleRefresh} disabled={getDepositResponse.isFetching || refreshTimeout}>
-							<RefreshIcon size={"1rem"} fill='white' />
-							<div>Refresh Status</div>
-						</Button>
-					</div>
-				)}
 				{data.deposits.map((d: any) => (
 					<div key={d.expires} className={styles.cardWrapper}>
 						<MintHistoryCard
