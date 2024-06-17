@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for bamkfi-frontend on 2024-06-13T23:03:35-04:00
+# fly.toml app configuration file generated for bamkfi-frontend on 2024-06-17T16:58:02-04:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -6,17 +6,34 @@
 app = 'bamkfi-frontend'
 primary_region = 'ewr'
 
-[build]
-
 [http_service]
   internal_port = 3000
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ['app']
 
 [[vm]]
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
+
+[deploy]
+  strategy = "bluegreen"
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  timeout = "5s"
+  path = "/"
+  protocol = "https"
+
+[http_service.concurrency]
+  type = "requests"
+
+[[restart]]
+  policy = "always"
+  retries = 10
+  processes = ["app"]
