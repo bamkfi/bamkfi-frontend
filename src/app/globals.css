@@ -54,6 +54,13 @@
   }
 }
 
+.twitter-tweet iframe {
+  color-scheme: light;
+}
+/*this is a hack to remove white corners in dark theme
+described here. set to dark or remove to see its effect.
+https://github.com/squidfunk/mkdocs-material/issues/6889
+*/
 
 @layer base {
   * {

@@ -30,6 +30,10 @@ export default function Navigation() {
 				name: 'Docs',
 				href: GITBOOK_URL
 			},
+			{
+				name: 'News',
+				href: '/news'
+			},
 		]
 	}, [])
 
@@ -66,7 +70,7 @@ export default function Navigation() {
 	)
 
 	return (
-        <div className="inline-flex items-center gap-4 text-sm lg:gap-6 px-0">
+        <div className="inline-flex items-center gap-4 text-sm lg:gap-6 px-1 w-fit">
             {links.map(l => (
                 <RenderLink key={l.name} {...l} />
             ))}
