@@ -2,6 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 
 import {
+	GITBOOK_URL,
 	SEASON_1_BAMK_PER_BLOCK,
 } from '@/lib/constants'
 import BamkIcon from '@/icons/bamk'
@@ -25,6 +26,27 @@ export default function Header(props: {
 		APY = usdPricePerBamk * SEASON_1_BAMK_PER_BLOCK * 144 * 365 / nusdTotalCirculating;
 	}
 
+	const links = React.useMemo(() => {
+		return [
+			{
+				name: 'Swap',
+				href: '/swap'
+			},
+			{
+				name: 'Leaderboard',
+				href: '/leaderboard'
+			},
+			{
+				name: 'Calculator',
+				href: '/calculator'
+			},
+			{
+				name: 'Docs',
+				href: GITBOOK_URL
+			},
+		]
+	}, [])
+
 	return (
 		<header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 			<div className="flex justify-between items-center h-14 max-w-screen-xl container px-2 sm:px-8">
@@ -39,7 +61,7 @@ export default function Header(props: {
 					</Link>
 				</div>
 				<div className='hidden sm:block'>
-					<Navigation />
+					<Navigation links={links} />
 				</div>
 				{APY > 0 ? (
 					<div
@@ -58,7 +80,7 @@ export default function Header(props: {
 				}
 			</div>
 			<div className='sm:hidden inline-flex container ml-2 mt-3 mb-4 w-fit pl-2 pr-0'>
-				<Navigation />
+				<Navigation links={links} />
 			</div>
 		</header>
 	)

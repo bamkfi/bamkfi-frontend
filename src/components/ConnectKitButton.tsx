@@ -3,6 +3,7 @@
 import { ConnectKitButton, useSIWE } from "connectkit";
 import { Button } from "./ui/button";
 import { shortenAddress } from "@/utils";
+import EthIcon from "@/icons/eth";
 
 export const CustomConnectKitButton = () => {
   const siwe = useSIWE();
@@ -10,28 +11,15 @@ export const CustomConnectKitButton = () => {
     <ConnectKitButton.Custom>
       {({ isConnected, isConnecting, show, hide, address, ensName, chain }) => {
         return (
-          <Button onClick={show} variant={isConnected ? 'ghost' : 'default'} disabled={isConnecting}>
+          <Button onClick={show} variant={isConnected ? 'ghost' : 'outline'} disabled={isConnecting}>
             <div className="flex gap-2 items-center">
               {(isConnected && !siwe.isSignedIn) && (
                 <div className="relative">
                   <div className="absolute top-[-2px] right-[-2px] z-2 bg-[#1a88f8] rounded-md shadow-[0_0_0_2px] shadow-[var(--ck-body-background)] w-2 h-2"></div>
-                  <svg
-                    aria-hidden="true"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="overflow-visible"
-                  >
-                    <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="2"></circle>
-                    <path
-                      d="M16.5 16.775C14.8618 15.0649 12.5552 14 10 14C7.44477 14 5.13825 15.0649 3.5 16.775"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    ></path>
-                    <circle cx="10" cy="8" r="3" stroke="currentColor" strokeWidth="2"></circle>
-                  </svg>
+                  
+                  <div className="rounded-full bg-slate-100">
+                    <EthIcon height={20} width={20} className="p-[2px]" />
+                  </div>
                 </div>
               )}
               {(isConnected && siwe.isSignedIn) && (
@@ -54,25 +42,15 @@ export const CustomConnectKitButton = () => {
                       ></path>
                     </svg>
                   </div>
-                  <svg
-                    aria-hidden="true"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="overflow-visible"
-                  >
-                    <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="2"></circle>
-                    <path
-                      d="M16.5 16.775C14.8618 15.0649 12.5552 14 10 14C7.44477 14 5.13825 15.0649 3.5 16.775"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    ></path>
-                    <circle cx="10" cy="8" r="3" stroke="currentColor" strokeWidth="2"></circle>
-                  </svg>
+                  <div className="rounded-full bg-slate-100">
+                    <EthIcon height={20} width={20} className="p-[2px]" />
+                  </div>
                 </div>
               )}
+              {!isConnected && 
+                  <div className="rounded-full bg-slate-100">
+                    <EthIcon height={20} width={20} className="p-[2px]" />
+                  </div>}
               {(isConnected && address) ? shortenAddress(address) : "Connect Wallet"}
             </div>
           </Button>

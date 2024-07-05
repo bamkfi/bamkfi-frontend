@@ -1,30 +1,18 @@
+'use client'
+
 import { useQuery } from '@tanstack/react-query'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useRef, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useSIWE } from 'connectkit'
 import styles from './History.module.css'
 import React from 'react'
-import NUSDIcon from '../../icons/nusd'
-import { Grid, GridProps } from 'react-loader-spinner'
-import { isExpired } from '../../utils'
-import { Button } from '../../components/ui/button'
-import { CircleCheckIcon } from '../../icons/CircleCheckIcon'
-import { WarningOutlineIcon } from '../../icons/WarningOutlineIcon'
-import { RefreshIcon } from '@/icons/RefreshIcon'
-import { toast } from 'react-toastify'
-
-const GridSpinner: FC<GridProps & { color: string }> = props => (
-	<Grid
-		visible={true}
-		height="20"
-		width="20"
-		ariaLabel="loading"
-		radius="12"
-		wrapperStyle={{}}
-		wrapperClass="grid-wrapper"
-		{...props}
-	/>
-)
+import NUSDIcon from '../../../../icons/nusd'
+import { isExpired } from '../../../../utils'
+import { Button } from '../../../../components/ui/button'
+import { CircleCheckIcon } from '../../../../icons/CircleCheckIcon'
+import { WarningOutlineIcon } from '../../../../icons/WarningOutlineIcon'
+import CountdownTimer from '@/components/CountdownTimer'
+import { GridSpinner } from '@/components/Loaders'
 
 const ValueWithLoader = (props: { value: string }) => {
 	return (
@@ -35,8 +23,16 @@ const ValueWithLoader = (props: { value: string }) => {
 	)
 }
 
-function getStatus({ ethTxid, btcTxid, expires}: { ethTxid: string, btcTxid: string, expires: number }) {
-	let status: 'Completed' | 'In Progress' | 'Cancelled' ;
+function getStatus({
+	ethTxid,
+	btcTxid,
+	expires
+}: {
+	ethTxid: string
+	btcTxid: string
+	expires: number
+}) {
+	let status: 'Completed' | 'In Progress' | 'Cancelled'
 	if (btcTxid) {
 		status = 'Completed'
 	} else if (isExpired(expires) && !ethTxid) {
@@ -44,7 +40,7 @@ function getStatus({ ethTxid, btcTxid, expires}: { ethTxid: string, btcTxid: str
 	} else {
 		status = 'In Progress'
 	}
-	return status;
+	return status
 }
 
 const MintHistoryCard: React.FC<{
@@ -116,7 +112,9 @@ const MintHistoryCard: React.FC<{
 					<div>
 						<label className={styles.label}>Order Status</label>
 						<div className={styles.valueContainer}>
-							{props.status === 'Completed' && <CircleCheckIcon size="1.5rem" fill="rgb(60, 179, 113)" />}
+							{props.status === 'Completed' && (
+								<CircleCheckIcon size="1.5rem" fill="rgb(60, 179, 113)" />
+							)}
 							{props.status === 'Cancelled' && (
 								<WarningOutlineIcon size="1.5rem" fill="rgb(205, 92, 92)" />
 							)}
@@ -129,7 +127,7 @@ const MintHistoryCard: React.FC<{
 	)
 }
 
-export const MintHistory: FC = () => {
+function MintHistory() {
 	const account = useAccount()
 	const siwe = useSIWE()
 	const [page, setPage] = useState(1)
@@ -149,18 +147,26 @@ export const MintHistory: FC = () => {
 				}
 			)
 			if (!response.ok) {
-				return null;
+				return null
 			}
 			const data = await response.json()
-			needsRefreshRef.current = data.deposits.some((d: any) => getStatus({ btcTxid: d.btc_txid, ethTxid: d.eth_txid, expires: d.expires }) === 'In Progress');
+			needsRefreshRef.current = data.deposits.some(
+				(d: any) =>
+					getStatus({ btcTxid: d.btc_txid, ethTxid: d.eth_txid, expires: d.expires }) ===
+					'In Progress'
+			)
 			return data
 		},
 		enabled: !!account.isConnected && siwe.isSignedIn,
 		refetchInterval: needsRefreshRef.current ? 30_000 : false
 	})
-	if (getDepositResponse.isFetching) return <div className='text-center mt-2'>Loading...</div>
+	if (getDepositResponse.isFetching) return <div className="text-center mt-2">Loading...</div>
+	if (!account.isConnected || !siwe.isSignedIn) {
+		return <div className="text-center mt-2">Connect to view history</div>
+	}
 	const data = getDepositResponse.data
-	if (!data?.total || !data?.deposits.length) return <div className='text-center mt-2'>No order history</div>
+	if (!data?.total || !data?.deposits.length)
+		return <div className="text-center mt-2">No order history</div>
 	const numPages = Math.ceil(data.total / limit)
 	return (
 		<>
@@ -180,7 +186,7 @@ export const MintHistory: FC = () => {
 							status={getStatus({
 								ethTxid: d.eth_txid,
 								btcTxid: d.btc_txid,
-								expires: d.expires,
+								expires: d.expires
 							})}
 						/>
 					</div>
@@ -208,31 +214,4 @@ export const MintHistory: FC = () => {
 	)
 }
 
-const CountdownTimer = ({ targetUnixTimestamp }: { targetUnixTimestamp: number }) => {
-	const [timeLeft, setTimeLeft] = useState(targetUnixTimestamp - Math.floor(Date.now() / 1000))
-
-	useEffect(() => {
-		const timer = setInterval(() => {
-			setTimeLeft(prevTime => {
-				const updatedTime = prevTime - 1
-				if (updatedTime <= 0) {
-					clearInterval(timer)
-					return 0
-				}
-				return updatedTime
-			})
-		}, 1000)
-
-		return () => clearInterval(timer)
-	}, [])
-
-	const formatTime = (time: number) => {
-		const minutes = Math.floor(time / 60)
-		const seconds = time % 60
-		return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-	}
-
-	return <span>{formatTime(timeLeft)}</span>
-}
-
-export default CountdownTimer
+export default MintHistory;

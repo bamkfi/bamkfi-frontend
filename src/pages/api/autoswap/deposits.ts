@@ -41,7 +41,6 @@ export default async function handler(
         },
       });
     }
-    console.log('response', response)
     const data = await response.json();
     res.status(response.status).json(data);
   } catch (error) {

@@ -4,29 +4,25 @@
 /* eslint-disable react/no-children-prop */
 
 import React, { useEffect, useState } from 'react';
-import styles from './Mint.module.css';
-import { useERC20 } from '../../hooks/useERC20';
-import { useAccount, useWriteContract } from 'wagmi';
-import { erc20Abi } from 'viem';
-import { useModal, useSIWE } from 'connectkit';
-import { ArrowIcon } from '../../icons/ArrowIcon';
+import styles from '../_styles/swap.module.css';
 
 import { useForm } from '@tanstack/react-form';
 import type { FieldApi } from '@tanstack/react-form';
 
 import { toast } from 'react-toastify';
-import { Button } from '../../components/ui/button';
-import { MintHistory } from './History';
+import { Button } from '@/components/ui/button';
 import EthIcon from '@/icons/eth';
 import BtcIcon from '@/icons/btc';
-import NusdIcon from '../../icons/nusd';
-import { USDE_CONTRACT_ADDRESS_MAINNET, USDF_CONTRACT_ADDRESS_SEPOLIA } from '@/lib/constants';
-import { CustomConnectKitButton } from '@/components/ConnectKitButton';
+import NusdIcon from '@/icons/nusd';
 import { nunito } from '@/components/ui/fonts';
 import UsdeIcon from '@/icons/USDe';
-import classNames from 'classnames';
-
-const USDE_TOKEN_DECIMALS = 18;
+import { Authorization, useWallet } from '@/components/providers/BtcWalletProvider';
+import { isAddress } from 'viem';
+import { ArrowIcon } from '@/icons/ArrowIcon';
+import { useQuery } from '@tanstack/react-query';
+import { ChevronRightIcon } from '@radix-ui/react-icons';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const FieldInfo: React.FC<{ field: FieldApi<any, any, any, any> }> = ({
   field,
@@ -41,13 +37,69 @@ const FieldInfo: React.FC<{ field: FieldApi<any, any, any, any> }> = ({
   );
 };
 
-const Mint: React.FC = () => {
+const NUSD_RUNE_NAME = 'NUSDNUSDNUSDNUSD'
+
+const Redeem: React.FC = () => {
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { balanceUSDE } = useERC20();
-  const siwe = useSIWE();
-  const modal = useModal();
-  const account = useAccount();
-  const { writeContractAsync } = useWriteContract();
+  const wallet = useWallet()
+  const nusdRuneBalance = useQuery({
+		queryKey: ['nusd-rune-balance', wallet.address],
+		queryFn: async () => {
+			const response = await fetch(
+				`/api/opi/getRunesBalanceByAddress?address=${wallet.address}`
+			)
+			if (!response.ok) {
+        console.error('Error in nusdRuneBalance response:', response.status, response.statusText)
+				return null;
+			}
+			const data = await response.json()
+      if (data.error) {
+        console.error('Error in nusdRuneBalance response:', data.error)
+        return null;
+      }
+			return data.result.find((rune: any) => rune.rune_name === NUSD_RUNE_NAME)?.total_balance ?? 0;
+		},
+    enabled: wallet.connected
+	})
+  // const nusdBrc20Balance = useQuery({
+	// 	queryKey: ['nusd-brc20-balance', wallet.address],
+	// 	queryFn: async () => {
+	// 		const response = await fetch(
+	// 			`/api/opi/getBrc20BalanceByAddress?address=${wallet.address}&ticker=$NUSD`
+	// 		)
+	// 		if (!response.ok) {
+  //       console.error('Error in nusdRuneBalance response:', response.status, response.statusText)
+	// 			throw new Error("Error in getBrc20BalanceByAddress")
+	// 		}
+	// 		const data = await response.json()
+  //     if (data.error) {
+  //       console.error('Error in nusdRuneBalance response:', data.error)
+  //       throw new Error("Error in getBrc20BalanceByAddress");
+  //     }
+	// 		return Number(data.result.overall_balance) / 10 ** 18
+	// 	},
+	// 	enabled: wallet.connected,
+	// })
+  const nusdBalance = 0 
+    // + (nusdBrc20Balance.data ?? 0) 
+    + (nusdRuneBalance.data ?? 0);
+  const nusdInputMax = Math.max(
+    // nusdBrc20Balance.data ?? 0,
+    0,
+    nusdRuneBalance.data ?? 0)
+
+  const postRedeem = (body: Authorization & {
+    from_nusd_amount: number;
+    to_eth_account: string;
+  }) => fetch(`${process.env.NEXT_PUBLIC_REDEEM_BASE_URL}/redeems/create`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })  
+
   const form = useForm({
     defaultValues: {
       sendAmount: '',
@@ -57,72 +109,39 @@ const Mint: React.FC = () => {
     onSubmit: async ({ value }) => {
       try {
         setIsSubmitting(true);
-        if (!account.isConnected) return modal.setOpen(true);
-        if (!siwe.isSignedIn) return modal.openSIWE();
-
         // Field validator not working for "sendAmount" so validating here instead
         // https://tanstack.com/form/latest/docs/framework/react/guides/validation#validation-at-field-level-vs-at-form-level
-        if (
+        if (!wallet.connected || !wallet.authorization) {
+          wallet.handleOpen(true);
+          return;
+        } else if (
           !value.sendAmount ||
           (value.sendAmount &&
             (Number(value.sendAmount) < 0 || isNaN(Number(value.sendAmount))))
         ) {
           throw new Error('Invalid amount');
-        } else if (Number(value.sendAmount) > balanceUSDE) {
-          throw new Error('Insufficient balance');
-        } else if (Number(value.sendAmount) < 10000) {
-          throw new Error("Minimum mint is $10,000")
+        } else if (!process.env.NEXT_PUBLIC_MINIMUM_REDEEM_USD || Number(value.sendAmount) < Number(process.env.NEXT_PUBLIC_MINIMUM_REDEEM_USD)) {
+          throw new Error(`Minimum redeem is ${Number(process.env.NEXT_PUBLIC_MINIMUM_REDEEM_USD).toLocaleString()} NUSD`)
         }
-
-        const reqData = {
-          from_eth_account: account.address,
-          from_usde_amount: (
-            Number(value.sendAmount) *
-            10 ** USDE_TOKEN_DECIMALS
-          ),
-          to_btc_address: value.receiveAddress,
-        };
-        const response = await fetch(`/api/autoswap/deposits` as string, {
-          method: 'POST',
-          body: JSON.stringify(reqData),
-        });
-        if (!response.ok) throw new Error('Server error');
-        const responseData = await response.json();
-        if (
-          Number(responseData.deposit_usde_total_amount) /
-            10 ** USDE_TOKEN_DECIMALS >
-          balanceUSDE
-        ) {
-          throw new Error("Insufficient balance")
-        }
-        const txid = await writeContractAsync(
-          {
-            chainId: account.chainId,
-            abi: erc20Abi,
-            address:
-              account.chain?.id === 1
-                ? USDE_CONTRACT_ADDRESS_MAINNET
-                : USDF_CONTRACT_ADDRESS_SEPOLIA,
-            functionName: 'transfer',
-            args: [
-              responseData.deposit_usde_account as `0x${string}`,
-              BigInt(responseData.deposit_usde_total_amount),
-            ],
-          },
-          {
-            onSettled: async () => {},
-            onError: async (e: any) => {
-              console.error(e);
-              // toast.error(e.message);
-            },
-            onSuccess: async () => {
-              const displayAmount = BigInt(value.sendAmount).toLocaleString();
-              toast.success(`Successfully ordered ${displayAmount} NUSD`);
-              form.reset();
-            },
+        const response = await postRedeem({
+          ...wallet.authorization,
+          from_nusd_amount: Number(value.sendAmount),
+          to_eth_account: value.receiveAddress,
+        })
+        if (!response.ok) {
+          if (response.status === 403) {
+            wallet.deauthorize()
+            wallet.handleOpen(true)
+            throw new Error("Authorization expired, please reconnect your wallet")
           }
-        );
-        console.log('txid', txid);
+        }
+        const data = await response.json()
+        if (data?.error) {
+          throw new Error(data.error)
+        }
+        const { orderId } = data.result
+        toast.success("Order created")
+        router.push(`/swap/redeem/history/${orderId}`)
       } catch (err: any) {
         toast.error(err.message)
         console.error(err);
@@ -142,42 +161,9 @@ const Mint: React.FC = () => {
     );
   }, [form, sendAmountField.state.value]);
 
-	const tabs = React.useMemo(() => {
-		return [
-			{
-				label: 'Mint',
-				value: 'mint'
-			},
-			{
-				label: 'History',
-				value: 'history'
-			},
-		] as const
-	}, [])
-
-  const [activeTab, setActiveTab] = useState<"mint" | "history">("mint")
-
   return (
-    <div className={classNames(styles.exchangeContainer, "px-4")}>
-      <div className='flex justify-between mb-2'>
-        <div className="flex items-center gap-4 text-sm">
-            {tabs.map(t => (
-                <button
-                  key={t.value}
-                  className={classNames(
-                    `ml-2 pb-1 transition-colors text-foreground/60 hover:text-foreground/80`, 
-                    {['border-b border-current border-orange-400 text-orange-400 hover:text-orange-400']: t.value === activeTab }
-                  )}
-                  onClick={() => setActiveTab(t.value)}
-                >
-                  {t.label}
-                </button>
-            ))}
-        </div>
-        <CustomConnectKitButton />
-      </div>
-      {activeTab === 'mint' ? (
-        <form
+    <div>
+      <form
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -204,40 +190,46 @@ const Mint: React.FC = () => {
                     You send
                   </label>
                   <div className={styles.inputGroup}>
-                    <div>
+                    <div className='w-full'>
                       <input
                         id={field.name}
                         name={field.name}
                         value={field.state.value}
                         onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        type="number"
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '');
+                          field.handleChange(value);
+                        }}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="\d*"
                         className={styles.input}
-                        placeholder="0.00"
-                        min={1 / 10 ** USDE_TOKEN_DECIMALS}
-                        max={balanceUSDE > 0 ? balanceUSDE : undefined}
+                        placeholder="0"
+                        min={0}
+                        max={nusdInputMax > 0 ? nusdInputMax : undefined}
                         disabled={isSubmitting}
                       />
                       <FieldInfo field={field} />
                     </div>
                     <div>
                       <div className={styles.currencyContainer}>
-                        <UsdeIcon height={24} width={24} />
-                        <div className={styles.coinText}>USDe</div>
+                        <div className="bg-[#F7931A] p-[0.4rem] rounded-full h-[24px] w-[24px]">
+                          <NusdIcon height={12} width={12} className="stroke-primary" />
+                        </div>
+                        <div className={styles.coinText}>
+                          <div>NUSD</div>
+                        </div>
                         <div className={styles.networkTagWrapper}>
                           <div className={styles.networkTag}>
-                            <div className='bg-[#FAFAFA] rounded-full'>
-                              <EthIcon width={20} height={20} className='p-[2px]' />
-                            </div>
+                            <BtcIcon width={20} height={20} />
                           </div>
                         </div>
                       </div>
-                      {account.isConnected && (
+                      {wallet.connected && !!wallet.authorization && (nusdRuneBalance.data !== null || nusdRuneBalance.isFetching) && (
                         <div className={styles.balanceContainer}>
                           <div className={styles.balance}>
-                            Balance: {balanceUSDE.toLocaleString()}
+                            Balance: {nusdRuneBalance.data !== null ? Number(nusdBalance).toLocaleString() : nusdRuneBalance.isFetching ? 'Loading' : 0}
                           </div>
-                          {/* <div className={styles.maxButton}>Max</div> */}
                         </div>
                       )}
                     </div>
@@ -260,6 +252,7 @@ const Mint: React.FC = () => {
                     You receive
                   </label>
                   <div className={styles.inputGroup}>
+                    <div>
                       <input
                         id={field.name}
                         name={field.name}
@@ -268,21 +261,20 @@ const Mint: React.FC = () => {
                         onChange={(e) => field.handleChange(e.target.value)}
                         type="number"
                         className={styles.input}
-                        placeholder="0.00"
+                        placeholder="0"
                         disabled
                       />
                       <FieldInfo field={field} />
+                    </div>
                     <div>
                       <div className={styles.currencyContainer}>
-                        <div className="bg-[#F7931A] p-[0.4rem] rounded-full">
-                          <NusdIcon height={14} width={14} className="stroke-primary" />
-                        </div>
-                        <div className={styles.coinText}>
-                          <div>NUSD</div>
-                        </div>
+                        <UsdeIcon height={24} width={24} />
+                        <div className={styles.coinText}>USDe</div>
                         <div className={styles.networkTagWrapper}>
                           <div className={styles.networkTag}>
-                            <BtcIcon width={20} height={20} />
+                            <div className='bg-[#FAFAFA] rounded-full'>
+                              <EthIcon width={20} height={20} className='p-[2px]' />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -296,7 +288,7 @@ const Mint: React.FC = () => {
                 name="receiveAddress"
                 validators={{
                   onChange: ({ value }) =>
-                    !value.trim() || value.trim().length < 26
+                    !isAddress(value)
                       ? 'Invalid address'
                       : undefined,
                 }}
@@ -313,7 +305,7 @@ const Mint: React.FC = () => {
                       onChange={(e) => field.handleChange(e.target.value)}
                       type="text"
                       className={styles.input}
-                      placeholder="bc1p..."
+                      placeholder="0x..."
                       disabled={isSubmitting}
                     />
                     <FieldInfo field={field} />
@@ -322,10 +314,6 @@ const Mint: React.FC = () => {
               />
             </div>
           </div>
-
-          {/* <div className={styles.fee}>
-              Fee estimate: {fee}
-          </div> */}
 
           <form.Subscribe
             selector={(state) => [state.canSubmit]}
@@ -337,20 +325,32 @@ const Mint: React.FC = () => {
                     disabled={isSubmitting}
                     variant={"default"}
                   >
-                    {isSubmitting ? 'Minting' : 'Mint' }
+                    Redeem
                   </Button>
                 </div>
               );
             }}
           />
         </form>
-      ) : activeTab === 'history' ? (
-        <>
-          {(account.isConnected && siwe.isSignedIn) ? <MintHistory /> : <div className='text-center mt-8'>Connect to view history</div>}
-        </>
-      ) : null}
+        {wallet.connected && wallet.authorization && (
+          <Link href="/swap/redeem/history">
+            <div className={`${nunito.className} text-gray-400 text-center m-3`}>
+              <Button
+                type={'submit'}
+                disabled={isSubmitting}
+                variant={"ghost"}
+                className='hover:bg-transparent'
+              >
+                <div className='flex items-center opacity-75'>
+                  History
+                  <ChevronRightIcon />
+                </div>
+              </Button>
+            </div>
+          </Link>
+        )}
     </div>
-  );
-};
+  )
+}
 
-export default Mint
+export default Redeem;

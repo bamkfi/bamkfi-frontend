@@ -31,9 +31,10 @@
 .inputGroup {
   position: relative;
   display: flex;
-  gap: 1rem;
+  gap: 2rem;
   width: 100%;
   justify-content: space-between;
+  height: 60px;
 }
 
 .inputGroup > * {
@@ -128,6 +129,7 @@
   margin: auto;
   margin-bottom: -8px;
   margin-top: -8px;
+  z-index: 2;
 }
 
 .arrow > * {

@@ -3,35 +3,10 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-
-import {
-    GITBOOK_URL,
-} from '@/lib/constants'
 import classNames from 'classnames'
 
-export default function Navigation() {
+export default function Navigation({ links } : { links: { name: string; href: string;}[] }) {
 	const pathname = usePathname()
-
-	const links = React.useMemo(() => {
-		return [
-			{
-				name: 'Mint',
-				href: '/mint'
-			},
-			{
-				name: 'Leaderboard',
-				href: '/leaderboard'
-			},
-			{
-				name: 'Calculator',
-				href: '/calculator'
-			},
-			{
-				name: 'Docs',
-				href: GITBOOK_URL
-			},
-		]
-	}, [])
 
 	const RenderLink = React.useCallback(
 		(props: { name: string; href: string }) => {
@@ -42,7 +17,7 @@ export default function Navigation() {
 						href={props.href}
 						className={classNames(
 							`pb-1 transition-colors text-foreground/60 hover:text-foreground/80`, 
-							{['border-b border-current border-orange-400 text-orange-400 hover:text-orange-400']: props.href === pathname }
+							{['border-b border-current border-orange-400 text-orange-400 hover:text-orange-400']: pathname?.startsWith(props.href) }
 						)}
 					>
 						{props.name}
