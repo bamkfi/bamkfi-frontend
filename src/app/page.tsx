@@ -177,12 +177,12 @@ async function getData() {
 			}, 'latest'],
 			id: 1
 		}),
-		next: { revalidate: 0 }
+		next: { revalidate: 600 }
 	});
 	
 	if (!susdeUnstakingResponse.ok) {
 		console.error("Error fetching susdeUnstakingResponse", susdeUnstakingResponse.status, susdeUnstakingResponse.statusText);
-		return;
+		return {}
 	}
 	const responseJson = await susdeUnstakingResponse.json();
 	const result = responseJson.result;
@@ -192,6 +192,7 @@ async function getData() {
 		usdeUnstakingBalance = Number(underlyingAmount) / 10 ** 18;
 	} else {
 		console.error('Error fetching cooldown amount', responseJson);
+		return {}
 	}
 
 	const susdeValue = susdePriceData['ethena-staked-usde'].usd * Number(susdeBalance);
