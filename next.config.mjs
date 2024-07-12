@@ -8,6 +8,11 @@ const nextConfig = {
     async redirects() {
         return [
           {
+            source: '/',
+            destination: '/swap/mint',
+            permanent: false,
+          },
+          {
             source: '/mint',
             destination: '/swap/mint',
             permanent: false,
@@ -18,6 +23,9 @@ const nextConfig = {
             permanent: false,
           },
         ];
+      },
+      experimental: {
+        missingSuspenseWithCSRBailout: false, // https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
       },
 };
 

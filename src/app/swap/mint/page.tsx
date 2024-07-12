@@ -8,6 +8,7 @@ import styles from '../_styles/swap.module.css';
 import { useERC20 } from '../../../hooks/useERC20';
 import { useAccount, useWriteContract } from 'wagmi';
 import { erc20Abi } from 'viem';
+import { usdtAbi } from './usdtAbi';
 import { useModal, useSIWE } from 'connectkit';
 import { ArrowIcon } from '../../../icons/ArrowIcon';
 
@@ -19,14 +20,11 @@ import { Button } from '@/components/ui/button';
 import EthIcon from '@/icons/eth';
 import BtcIcon from '@/icons/btc';
 import NusdIcon from '@/icons/nusd';
-import { USDE_CONTRACT_ADDRESS_MAINNET, USDF_CONTRACT_ADDRESS_SEPOLIA } from '@/lib/constants';
 import { nunito } from '@/components/ui/fonts';
-import UsdeIcon from '@/icons/USDe';
 import { ChevronRightIcon } from "@radix-ui/react-icons";
 import Link from 'next/link';
-
-
-const USDE_TOKEN_DECIMALS = 18;
+import { useFromTokenInfo } from './_hooks/useFromTokenInfo';
+import { USDT_CONTRACT_ADDRESS_MAINNET } from '@/lib/constants';
 
 const FieldInfo: React.FC<{ field: FieldApi<any, any, any, any> }> = ({
   field,
@@ -41,8 +39,14 @@ const FieldInfo: React.FC<{ field: FieldApi<any, any, any, any> }> = ({
   );
 };
 
-const Mint: React.FC = () => {
-  const { balanceUSDE } = useERC20();
+const MintFromErc20 = (props: {
+  contractId: `0x${string}`;
+  tokenDecimals: number;
+  icon: React.ReactNode;
+  ticker: string;
+}) => {
+  const { contractId, tokenDecimals, icon, ticker } = props;
+  const { balance } = useERC20({ contractId, tokenDecimals });
   const siwe = useSIWE();
   const modal = useModal();
   const account = useAccount();
@@ -68,19 +72,20 @@ const Mint: React.FC = () => {
             (Number(value.sendAmount) < 0 || isNaN(Number(value.sendAmount))))
         ) {
           throw new Error('Invalid amount');
-        } else if (Number(value.sendAmount) > balanceUSDE) {
+        } else if (Number(value.sendAmount) > balance) {
           throw new Error('Insufficient balance');
         } else if (!process.env.NEXT_PUBLIC_MINIMUM_DEPOSIT_USD || Number(value.sendAmount) < Number(process.env.NEXT_PUBLIC_MINIMUM_DEPOSIT_USD)) {
-          throw new Error("Minimum mint is 10,000 NUSD")
+          throw new Error(`Minimum mint is ${Number(process.env.NEXT_PUBLIC_MINIMUM_DEPOSIT_USD).toLocaleString()} NUSD`)
         }
 
         const reqData = {
           from_eth_account: account.address,
           from_usde_amount: (
             Number(value.sendAmount) *
-            10 ** USDE_TOKEN_DECIMALS
+            10 ** tokenDecimals
           ),
           to_btc_address: value.receiveAddress,
+          contract_id: contractId
         };
         const response = await fetch(`/api/autoswap/deposits` as string, {
           method: 'POST',
@@ -90,19 +95,16 @@ const Mint: React.FC = () => {
         const responseData = await response.json();
         if (
           Number(responseData.deposit_usde_total_amount) /
-            10 ** USDE_TOKEN_DECIMALS >
-          balanceUSDE
+            10 ** tokenDecimals >
+          balance
         ) {
           throw new Error("Insufficient balance")
         }
         const txid = await writeContractAsync(
           {
             chainId: account.chainId,
-            abi: erc20Abi,
-            address:
-              account.chain?.id === 1
-                ? USDE_CONTRACT_ADDRESS_MAINNET
-                : USDF_CONTRACT_ADDRESS_SEPOLIA,
+            abi: contractId === USDT_CONTRACT_ADDRESS_MAINNET ? usdtAbi : erc20Abi,
+            address: contractId,
             functionName: 'transfer',
             args: [
               responseData.deposit_usde_account as `0x${string}`,
@@ -181,16 +183,18 @@ const Mint: React.FC = () => {
                         type="number"
                         className={styles.input}
                         placeholder="0.00"
-                        min={1 / 10 ** USDE_TOKEN_DECIMALS}
-                        max={balanceUSDE > 0 ? balanceUSDE : undefined}
+                        min={0}
+                        max={balance > 0 ? balance : undefined}
                         disabled={isSubmitting}
                       />
                       <FieldInfo field={field} />
                     </div>
                     <div>
                       <div className={styles.currencyContainer}>
-                        <UsdeIcon height={24} width={24} />
-                        <div className={styles.coinText}>USDe</div>
+                        {icon}
+                        <div className={styles.coinText}>
+                          {ticker}
+                        </div>
                         <div className={styles.networkTagWrapper}>
                           <div className={styles.networkTag}>
                             <div className='bg-[#FAFAFA] rounded-full'>
@@ -202,7 +206,7 @@ const Mint: React.FC = () => {
                       {account.isConnected && (
                         <div className={styles.balanceContainer}>
                           <div className={styles.balance}>
-                            Balance: {balanceUSDE.toLocaleString()}
+                            Balance: {balance.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                           </div>
                           {/* <div className={styles.maxButton}>Max</div> */}
                         </div>
@@ -328,4 +332,10 @@ const Mint: React.FC = () => {
   )
 }
 
-export default Mint;
+export default function MintPage() {
+  const fromTokenInfo = useFromTokenInfo()
+
+  return <MintFromErc20
+    {...fromTokenInfo}
+  />
+}

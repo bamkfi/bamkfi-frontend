@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { FC, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useSIWE } from 'connectkit'
 import styles from './History.module.css'
@@ -13,6 +13,7 @@ import { CircleCheckIcon } from '../../../../icons/CircleCheckIcon'
 import { WarningOutlineIcon } from '../../../../icons/WarningOutlineIcon'
 import CountdownTimer from '@/components/CountdownTimer'
 import { GridSpinner } from '@/components/Loaders'
+import { useFromTokenInfo } from '../_hooks/useFromTokenInfo'
 
 const ValueWithLoader = (props: { value: string }) => {
 	return (
@@ -54,6 +55,7 @@ const MintHistoryCard: React.FC<{
 	depositUsdeTotalAmount: number
 	depositUsdeAccount: string
 	status: ReturnType<typeof getStatus>
+	fromTokenInfo: ReturnType<typeof useFromTokenInfo>
 }> = props => {
 	return (
 		<div key={props.expires} className={styles.card}>
@@ -74,7 +76,7 @@ const MintHistoryCard: React.FC<{
 						<div className="bg-[#F7931A] p-[0.4rem] rounded-full">
 							<NUSDIcon height={14} width={14} className="stroke-primary" />
 						</div>
-						{(Number(props.fromUsdeAmount) / 10 ** 18).toLocaleString()} NUSD
+						{(Number(props.fromUsdeAmount) / 10 ** props.fromTokenInfo.tokenDecimals).toLocaleString()} NUSD
 					</div>
 				</div>
 				<div>
@@ -83,7 +85,7 @@ const MintHistoryCard: React.FC<{
 				</div>
 				{props.status !== 'Cancelled' && (
 					<div>
-						<label className={styles.label}>USDe Deposit Transaction ID</label>
+						<label className={styles.label}>{props.fromTokenInfo.ticker} Deposit Transaction ID</label>
 						<ValueWithLoader value={props.ethTxid} />
 					</div>
 				)}
@@ -129,6 +131,7 @@ const MintHistoryCard: React.FC<{
 
 function MintHistory() {
 	const account = useAccount()
+	const fromTokenInfo = useFromTokenInfo()
 	const siwe = useSIWE()
 	const [page, setPage] = useState(1)
 	const limit = 5
@@ -140,7 +143,8 @@ function MintHistory() {
 				`/api/autoswap/deposits?${new URLSearchParams({
 					eth_account: account.address as string,
 					limit: limit.toString(),
-					offset: ((page - 1) * limit).toString()
+					offset: ((page - 1) * limit).toString(),
+					contract_id: fromTokenInfo.contractId,
 				}).toString()}`,
 				{
 					method: 'GET'
@@ -188,6 +192,7 @@ function MintHistory() {
 								btcTxid: d.btc_txid,
 								expires: d.expires
 							})}
+							fromTokenInfo={fromTokenInfo}
 						/>
 					</div>
 				))}

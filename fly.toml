@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for bamkfi-frontend on 2024-06-13T23:03:35-04:00
+# fly.toml app configuration file generated for bamkfi-frontend-usdt-preview on 2024-07-12T04:05:35-04:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -7,6 +7,7 @@ app = 'bamkfi-frontend'
 primary_region = 'ewr'
 
 [build]
+  dockerfile = 'Dockerfile.prod'
 
 [http_service]
   internal_port = 3000
