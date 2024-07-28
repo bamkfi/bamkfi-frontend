@@ -5,8 +5,9 @@ import TwitterIcon from '@/icons/twitter'
 import TelegramIcon from '@/icons/telegram'
 import GithubIcon from '@/icons/github'
 import GitbookIcon from '@/icons/gitbook'
-import { TWITTER_URL, TELEGRAM_URL, GITHUB_URL, GITBOOK_URL } from '@/lib/constants'
+import { TWITTER_URL, TELEGRAM_URL, GITHUB_URL, GITBOOK_URL, COINGECKO_URL } from '@/lib/constants'
 import Image from 'next/image'
+import CoinGeckoIcon from '@/icons/coingecko'
 
 export default function Footer() {
 	return (
@@ -154,6 +155,11 @@ export default function Footer() {
 				<a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
 					<Button variant="ghost" size="icon">
 						<GithubIcon className="h-6 w-6 fill-foreground/60 hover:fill-foreground/80" />
+					</Button>
+				</a>
+				<a href={COINGECKO_URL} target="_blank" rel="noopener noreferrer">
+					<Button variant="ghost" size="icon">
+						<CoinGeckoIcon className="h-6 w-6 fill-foreground/60 hover:fill-foreground/80" />
 					</Button>
 				</a>
 			</div>

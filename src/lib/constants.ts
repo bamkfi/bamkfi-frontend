@@ -1,5 +1,6 @@
 export const TWITTER_URL = 'https://x.com/bamkfi'
 export const TELEGRAM_URL = 'https://t.me/bamkfi'
+export const COINGECKO_URL = 'https://www.coingecko.com/coins/bamk-of-nakamoto-dollar'
 export const GITHUB_URL = 'https://github.com/bamkfi'
 export const GITBOOK_URL = 'https://docs.bamk.fi'
 export const BAMK_MARKET_URL = 'https://magiceden.io/runes/BAMK%E2%80%A2OF%E2%80%A2NAKAMOTO%E2%80%A2DOLLAR'
