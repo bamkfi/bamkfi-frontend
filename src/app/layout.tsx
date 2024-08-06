@@ -31,18 +31,6 @@ export const metadata: Metadata = {
 }
 
 async function getData() {
-	const nusdInfo = await fetch('https://open-api.unisat.io/v1/indexer/brc20/$NUSD/info', {
-		headers: {
-			Authorization: `Bearer ${process.env.UNISAT_API_KEY}`
-		},
-		next: { revalidate: 600 }
-	})
-	if (!nusdInfo.ok) {
-		console.error("Error fetching NUSD BRC20 data from unisat", nusdInfo.status, nusdInfo.statusText)
-		return {}
-	}
-	const nusdInfoData: { minted: string } = (await nusdInfo.json()).data
-
 	const magicEdenBamk = await fetch('https://api-mainnet.magiceden.dev/v2/ord/btc/runes/market/BAMKOFNAKAMOTODOLLAR/info', {
 		headers: {
 			Authorization: `Bearer ${process.env.MAGIC_EDEN_API_KEY}`
@@ -108,7 +96,7 @@ async function getData() {
 	}
 
 	let apy = 0
-	if (magicEdenBamkData && btcPriceData && nusdInfoData && tvl) {
+	if (magicEdenBamkData && btcPriceData && tvl) {
 		const usdPricePerBamk =
 			(Number(magicEdenBamkData.floorUnitPrice.formatted) / 100_000_000) *
 			btcPriceData.bitcoin.usd
@@ -116,7 +104,6 @@ async function getData() {
 	}
 	
 	return {
-		nusdInfoData,
 		nusdRuneData,
 		magicEdenBamkData,
 		btcPriceData,

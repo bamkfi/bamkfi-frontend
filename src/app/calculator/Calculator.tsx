@@ -17,7 +17,6 @@ export const getServerSideProps = (async (context) => {
 export default function Calculator({ initialNusdBalance }: { initialNusdBalance: string }) {
   const {
     magicEdenBamkData,
-    nusdInfoData,
     nusdRuneData,
     btcPriceData,
     tvl,
@@ -82,7 +81,6 @@ export default function Calculator({ initialNusdBalance }: { initialNusdBalance:
 
   if (
     !magicEdenBamkData ||
-    !nusdInfoData ||
     !nusdRuneData ||
     !btcPriceData
   ) {
